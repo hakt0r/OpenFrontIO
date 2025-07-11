@@ -37,6 +37,10 @@ export default async (env, argv) => {
           type: "asset/source",
         },
         {
+          test: /\.(vert|frag)$/,
+          type: "asset/source",
+        },
+        {
           test: /\.md$/,
           type: "asset/resource", // Changed from raw-loader
           generator: {

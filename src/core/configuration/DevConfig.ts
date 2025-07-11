@@ -42,6 +42,23 @@ export class DevServerConfig extends DefaultServerConfig {
   subdomain(): string {
     return "";
   }
+
+  // Feature toggles - disabled by default in development to prevent annoying errors
+  stripeEnabled(): boolean {
+    // Client-side: disabled by default in dev
+    if (typeof process === 'undefined') return false;
+    return process.env.ENABLE_STRIPE === "true";
+  }
+  analyticsEnabled(): boolean {
+    // Client-side: disabled by default in dev
+    if (typeof process === 'undefined') return false;
+    return process.env.ENABLE_ANALYTICS === "true";
+  }
+  adsEnabled(): boolean {
+    // Client-side: disabled by default in dev
+    if (typeof process === 'undefined') return false;
+    return process.env.ENABLE_ADS === "true";
+  }
 }
 
 export class DevConfig extends DefaultConfig {

@@ -1,5 +1,6 @@
 import { LitElement, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
+import { getServerConfigFromClient } from "../core/configuration/ConfigLoader";
 
 declare global {
   interface Window {
@@ -22,6 +23,15 @@ export class GoogleAdElement extends LitElement {
   @property({ type: Boolean }) fullWidthResponsive = true;
   @property({ type: String }) adTest = "off"; // "on" for testing, remove or set to "off" for production
   @property({ type: String }) darkBackgroundColor = "rgba(0, 0, 0, 0.2)";
+  
+  private adsEnabled = false;
+
+  async connectedCallback() {
+    super.connectedCallback();
+    const config = await getServerConfigFromClient();
+    this.adsEnabled = !isElectron() && config.adsEnabled();
+    this.requestUpdate();
+  }
 
   // Disable shadow DOM so AdSense can access the elements
   createRenderRoot() {
@@ -49,9 +59,10 @@ export class GoogleAdElement extends LitElement {
   `;
 
   render() {
-    if (isElectron()) {
+    if (!this.adsEnabled) {
       return html``;
     }
+    
     return html`
       <div class="google-ad-container">
         <ins
@@ -67,19 +78,21 @@ export class GoogleAdElement extends LitElement {
     `;
   }
 
-  connectedCallback() {
-    super.connectedCallback();
+  firstUpdated() {
+    this.initializeAds();
+  }
 
-    // Wait for the component to be fully rendered
-    setTimeout(() => {
-      try {
-        // Initialize this specific ad
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-        console.log("Ad initialized for slot:", this.adSlot);
-      } catch (e) {
-        console.error("AdSense initialization error for slot:", this.adSlot, e);
-      }
-    }, 100);
+  private async initializeAds() {
+    if (!this.adsEnabled) {
+      return;
+    }
+
+    try {
+      // Initialize this specific ad
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    } catch (e) {
+      console.error("AdSense initialization error for slot:", this.adSlot, e);
+    }
   }
 }
 

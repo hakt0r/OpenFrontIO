@@ -1,5 +1,6 @@
 import { UserMeResponse } from "../core/ApiSchemas";
 import { COSMETICS } from "../core/CosmeticSchemas";
+import { getServerConfigFromClient } from "../core/configuration/ConfigLoader";
 import { getApiBase, getAuthHeader } from "./jwt";
 import { translateText } from "./Utils";
 
@@ -98,6 +99,13 @@ function addRestrictions(
 }
 
 export async function handlePurchase(priceId: string) {
+  const config = await getServerConfigFromClient();
+  
+  if (!config.stripeEnabled()) {
+    alert("Purchases are not enabled in this environment.");
+    return;
+  }
+  
   try {
     const response = await fetch(
       `${getApiBase()}/stripe/create-checkout-session`,
@@ -124,13 +132,22 @@ export async function handlePurchase(priceId: string) {
     // Redirect to Stripe checkout
     window.location.href = url;
   } catch (error) {
-    console.error("Purchase error:", error);
-    alert("Something went wrong. Please try again later.");
+    if (config.stripeEnabled()) {
+      console.error("Purchase error:", error);
+      alert("Something went wrong. Please try again later.");
+    }
   }
 }
 
 // Returns a map of flare -> product
 export async function listAllProducts(): Promise<Map<string, StripeProduct>> {
+  const config = await getServerConfigFromClient();
+  
+  // Skip Stripe API calls if not enabled
+  if (!config.stripeEnabled()) {
+    return new Map();
+  }
+  
   try {
     const response = await fetch(`${getApiBase()}/stripe/products`);
     if (!response.ok) {
@@ -143,7 +160,9 @@ export async function listAllProducts(): Promise<Map<string, StripeProduct>> {
     });
     return productMap;
   } catch (error) {
-    console.error("Failed to fetch products:", error);
+    if (config.stripeEnabled()) {
+      console.error("Failed to fetch products:", error);
+    }
     return new Map();
   }
 }

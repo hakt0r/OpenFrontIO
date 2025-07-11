@@ -1,6 +1,7 @@
 import { LitElement, css, html } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { EventBus, GameEvent } from "../../../core/EventBus";
+import { getServerConfigFromClient } from "../../../core/configuration/ConfigLoader";
 import { getGamesPlayed } from "../../Utils";
 import { Layer } from "./Layer";
 
@@ -23,13 +24,17 @@ export class GutterAdModal extends LitElement implements Layer {
   private leftContainerId: string = "gutter-ad-container-left";
   private rightContainerId: string = "gutter-ad-container-right";
   private margin: string = "10px";
+  private adsEnabled: boolean = false;
 
   // Override createRenderRoot to disable shadow DOM
   createRenderRoot() {
     return this;
   }
 
-  init() {
+  async init() {
+    const config = await getServerConfigFromClient();
+    this.adsEnabled = config.adsEnabled();
+    
     if (getGamesPlayed() > 1) {
       this.eventBus.on(GutterAdModalEvent, (event) => {
         if (event.isVisible) {
@@ -48,11 +53,9 @@ export class GutterAdModal extends LitElement implements Layer {
   // Called after the component's DOM is first rendered
   firstUpdated() {
     // DOM is guaranteed to be available here
-    console.log("GutterAdModal DOM is ready");
   }
 
   public show(): void {
-    console.log("showing GutterAdModal");
     this.isVisible = true;
     this.requestUpdate();
 
@@ -63,7 +66,6 @@ export class GutterAdModal extends LitElement implements Layer {
   }
 
   public hide(): void {
-    console.log("hiding GutterAdModal");
     this.isVisible = false;
     this.destroyAds();
     this.adLoaded = false;
@@ -71,23 +73,31 @@ export class GutterAdModal extends LitElement implements Layer {
   }
 
   private loadAds(): void {
+    if (!this.adsEnabled) {
+      this.hide();
+      return;
+    }
+    
     // Ensure the container elements exist before loading ads
     const leftContainer = this.querySelector(`#${this.leftContainerId}`);
     const rightContainer = this.querySelector(`#${this.rightContainerId}`);
 
     if (!leftContainer || !rightContainer) {
-      console.warn("Ad containers not found in DOM");
+      if (this.adsEnabled) {
+        console.warn("Ad containers not found in DOM");
+      }
       return;
     }
 
     if (!window.ramp) {
-      console.warn("Playwire RAMP not available");
+      if (this.adsEnabled) {
+        console.warn("Playwire RAMP not available");
+      }
       this.hide();
       return;
     }
 
     if (this.adLoaded) {
-      console.log("Ads already loaded, skipping");
       return;
     }
 
@@ -104,10 +114,11 @@ export class GutterAdModal extends LitElement implements Layer {
           },
         ]);
         this.adLoaded = true;
-        console.log("Playwire ads loaded:", this.leftAdType, this.rightAdType);
       });
     } catch (error) {
-      console.error("Failed to load Playwire ads:", error);
+      if (this.adsEnabled) {
+        console.error("Failed to load Playwire ads:", error);
+      }
       this.hide();
     }
   }

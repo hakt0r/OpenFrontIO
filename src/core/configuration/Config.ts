@@ -61,6 +61,10 @@ export interface ServerConfig {
   cloudflareCredsPath(): string;
   stripePublishableKey(): string;
   allowedFlares(): string[] | undefined;
+  // Feature toggles for external services
+  stripeEnabled(): boolean;
+  analyticsEnabled(): boolean;
+  adsEnabled(): boolean;
 }
 
 export interface NukeMagnitude {
