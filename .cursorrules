@@ -1,0 +1,3 @@
+DO NOT run npm, webpack, or any build commands - dev server is always running
+DO NOT execute terminal commands that could interfere with development
+Focus on code changes only, not build processes 

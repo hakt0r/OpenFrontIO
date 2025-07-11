@@ -20,7 +20,7 @@ import { JoinPrivateLobbyModal } from "./JoinPrivateLobbyModal";
 import "./LangSelector";
 import type { LangSelector } from "./LangSelector";
 import type { LanguageModal } from "./LanguageModal";
-import { MapEditor } from "./components/mapEditor/MapEditor";
+import { MapEditor } from "./components/editor/Editor";
 import { NewsModal } from "./NewsModal";
 import "./PublicLobby";
 import type { PublicLobby } from "./PublicLobby";
