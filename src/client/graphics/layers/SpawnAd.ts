@@ -2,6 +2,7 @@ import { LitElement, css, html } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { translateText } from "../../../client/Utils";
 import { GameView } from "../../../core/game/GameView";
+import { getServerConfigFromClient } from "../../../core/configuration/ConfigLoader";
 import { getGamesPlayed } from "../../Utils";
 import { Layer } from "./Layer";
 
@@ -19,6 +20,7 @@ export class SpawnAd extends LitElement implements Layer {
   private adLoaded: boolean = false;
 
   private gamesPlayed: number = 0;
+  private adsEnabled: boolean = false;
 
   // Override createRenderRoot to disable shadow DOM
   createRenderRoot() {
@@ -31,8 +33,10 @@ export class SpawnAd extends LitElement implements Layer {
     super();
   }
 
-  init() {
+  async init() {
     this.gamesPlayed = getGamesPlayed();
+    const config = await getServerConfigFromClient();
+    this.adsEnabled = config.adsEnabled();
   }
 
   public show(): void {
@@ -50,6 +54,8 @@ export class SpawnAd extends LitElement implements Layer {
   }
 
   public async tick() {
+    if (!this.adsEnabled) return;
+    
     if (
       !this.isVisible &&
       this.g.inSpawnPhase() &&
@@ -60,18 +66,20 @@ export class SpawnAd extends LitElement implements Layer {
       // this.show();
     }
     if (this.isVisible && !this.g.inSpawnPhase()) {
-      console.log("hiding bottom left ad");
       this.hide();
     }
   }
 
   private loadAd(): void {
+    if (!this.adsEnabled) return;
+    
     if (!window.ramp) {
-      console.warn("Playwire RAMP not available");
+      if (this.adsEnabled) {
+        console.warn("Playwire RAMP not available");
+      }
       return;
     }
     if (this.adLoaded) {
-      console.log("Ad already loaded, skipping");
       return;
     }
     try {
@@ -83,10 +91,11 @@ export class SpawnAd extends LitElement implements Layer {
           },
         ]);
         this.adLoaded = true;
-        console.log("Playwire ad loaded:", AD_TYPE);
       });
     } catch (error) {
-      console.error("Failed to load Playwire ad:", error);
+      if (this.adsEnabled) {
+        console.error("Failed to load Playwire ad:", error);
+      }
     }
   }
 
@@ -97,7 +106,6 @@ export class SpawnAd extends LitElement implements Layer {
     try {
       window.ramp.que.push(() => {
         window.ramp.destroyUnits("all");
-        console.log("Playwire spawn ad destroyed");
       });
     } catch (error) {
       console.error("Failed to destroy Playwire ad:", error);

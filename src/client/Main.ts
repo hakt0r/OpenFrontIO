@@ -1,27 +1,29 @@
 import favicon from "../../resources/images/Favicon.svg";
 import version from "../../resources/version.txt";
-import { UserMeResponse } from "../core/ApiSchemas";
-import { GameRecord, GameStartInfo, ID } from "../core/Schemas";
-import { ServerConfig } from "../core/configuration/Config";
+import type { UserMeResponse } from "../core/ApiSchemas";
+import { type GameRecord, type GameStartInfo, ID } from "../core/Schemas";
+import { GameEnv } from "../core/configuration/Config";
+import type { ServerConfig } from "../core/configuration/Config";
 import { getServerConfigFromClient } from "../core/configuration/ConfigLoader";
 import { GameType } from "../core/game/Game";
 import { UserSettings } from "../core/game/UserSettings";
 import { joinLobby } from "./ClientGameRunner";
 import "./DarkModeButton";
-import { DarkModeButton } from "./DarkModeButton";
+import type { DarkModeButton } from "./DarkModeButton";
 import "./FlagInput";
-import { FlagInput } from "./FlagInput";
+import type { FlagInput } from "./FlagInput";
 import { GameStartingModal } from "./GameStartingModal";
 import "./GoogleAdElement";
 import { HelpModal } from "./HelpModal";
 import { HostLobbyModal as HostPrivateLobbyModal } from "./HostLobbyModal";
 import { JoinPrivateLobbyModal } from "./JoinPrivateLobbyModal";
 import "./LangSelector";
-import { LangSelector } from "./LangSelector";
-import { LanguageModal } from "./LanguageModal";
+import type { LangSelector } from "./LangSelector";
+import type { LanguageModal } from "./LanguageModal";
+import { MapEditor } from "./components/mapEditor/MapEditor";
 import { NewsModal } from "./NewsModal";
 import "./PublicLobby";
-import { PublicLobby } from "./PublicLobby";
+import type { PublicLobby } from "./PublicLobby";
 import { SinglePlayerModal } from "./SinglePlayerModal";
 import { TerritoryPatternsModal } from "./TerritoryPatternsModal";
 import { UserSettingModal } from "./UserSettingModal";
@@ -33,9 +35,9 @@ import {
   translateText,
 } from "./Utils";
 import "./components/NewsButton";
-import { NewsButton } from "./components/NewsButton";
+import type { NewsButton } from "./components/NewsButton";
 import "./components/baseComponents/Button";
-import { OButton } from "./components/baseComponents/Button";
+import type { OButton } from "./components/baseComponents/Button";
 import "./components/baseComponents/Modal";
 import { discordLogin, getUserMe, isLoggedIn, logOut } from "./jwt";
 import "./styles.css";
@@ -57,6 +59,8 @@ declare global {
       };
       spaNewPage: (url: string) => void;
     };
+    dataLayer: any[];
+    gtag?: (...args: any[]) => void;
   }
 }
 
@@ -169,6 +173,25 @@ class Client {
       if (this.usernameInput?.isValid()) {
         spModal.open();
       }
+    });
+
+    // Map Editor (Dev only)
+    const mapEditor = document.querySelector(
+      "map-editor",
+    ) as MapEditor;
+    mapEditor instanceof MapEditor;
+    const mapEditorButton = document.getElementById("map-editor-button");
+    if (mapEditorButton === null) throw new Error("Missing map-editor-button");
+    
+    // Show map editor button only in dev environment  
+    getServerConfigFromClient().then(config => {
+      if (config.env() === GameEnv.Dev) {
+        mapEditorButton.hidden = false;
+      }
+    });
+    
+    mapEditorButton.addEventListener("click", () => {
+              mapEditor.open();
     });
 
     // const ctModal = document.querySelector("chat-modal") as ChatModal;
@@ -509,7 +532,70 @@ class Client {
 // Initialize the client when the DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
   new Client().initialize();
+  initializeExternalServices();
 });
+
+// Initialize external services based on configuration
+async function initializeExternalServices() {
+  try {
+    const config = await getServerConfigFromClient();
+    
+    // Initialize analytics if enabled
+    if (config.analyticsEnabled()) {
+      initializeAnalytics();
+    }
+    
+    // Initialize ads if enabled
+    if (config.adsEnabled()) {
+      initializeAds();
+    }
+  } catch (error) {
+    console.error("Failed to initialize external services:", error);
+  }
+}
+
+function initializeAnalytics() {
+  // Google Analytics - First Tag
+  const gaScript1 = document.createElement('script');
+  gaScript1.async = true;
+  gaScript1.src = 'https://www.googletagmanager.com/gtag/js?id=AW-16702609763';
+  document.head.appendChild(gaScript1);
+
+  window.dataLayer = window.dataLayer || [];
+  (window as any).gtag = function() {
+    window.dataLayer.push(arguments);
+  };
+  (window as any).gtag("js", new Date());
+  (window as any).gtag("config", "AW-16702609763");
+
+  // Google Analytics - Second Tag
+  const gaScript2 = document.createElement('script');
+  gaScript2.async = true;
+  gaScript2.src = 'https://www.googletagmanager.com/gtag/js?id=G-WQGQQ8RDN4';
+  document.head.appendChild(gaScript2);
+
+  (window as any).gtag("config", "G-WQGQQ8RDN4");
+
+  // Cloudflare Analytics
+  const cfScript = document.createElement('script');
+  cfScript.defer = true;
+  cfScript.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+  cfScript.setAttribute('data-cf-beacon', '{"token": "03d93e6fefb349c28ee69b408fa25a13"}');
+  document.head.appendChild(cfScript);
+}
+
+function initializeAds() {
+  // Initialize ramp object for Playwire
+  window.ramp = window.ramp || {};
+  window.ramp.que = window.ramp.que || [];
+  window.ramp.passiveMode = true;
+
+  // Load Playwire script
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = '//cdn.intergient.com/1025558/75940/ramp.js';
+  document.head.appendChild(script);
+}
 
 function setFavicon(): void {
   const link = document.createElement("link");

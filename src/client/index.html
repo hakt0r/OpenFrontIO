@@ -56,42 +56,7 @@
       document.documentElement.className = "preload";
     </script>
 
-    <!-- Playwire ads -->
-    <script>
-      window.ramp = window.ramp || {};
-      window.ramp.que = window.ramp.que || [];
-      window.ramp.passiveMode = true;
-    </script>
-
-    <!-- Analytics -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=AW-16702609763"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-
-      gtag("js", new Date());
-      gtag("config", "AW-16702609763");
-    </script>
-    <!-- Google tag (gtag.js) -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-WQGQQ8RDN4"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
-
-      gtag("config", "G-WQGQQ8RDN4");
-    </script>
+    <!-- These scripts will be conditionally loaded by the main application -->
   </head>
 
   <body
@@ -231,6 +196,14 @@
         ></o-button>
 
         <o-button
+          id="map-editor-button"
+          title="Map Editor"
+          hidden="true"
+          block
+          secondary
+        ></o-button>
+
+        <o-button
           id="help-button"
           title="Instructions"
           translationKey="main.instructions"
@@ -365,6 +338,7 @@
     <single-player-modal></single-player-modal>
     <host-lobby-modal></host-lobby-modal>
     <join-private-lobby-modal></join-private-lobby-modal>
+    <map-editor></map-editor>
     <emoji-table></emoji-table>
     <build-menu></build-menu>
     <win-modal></win-modal>
@@ -414,14 +388,6 @@
       });
     </script>
 
-    <!-- Playwire ads -->
-    <script async src="//cdn.intergient.com/1025558/75940/ramp.js"></script>
-
-    <!-- Analytics -->
-    <script
-      defer
-      src="https://static.cloudflareinsights.com/beacon.min.js"
-      data-cf-beacon='{"token": "03d93e6fefb349c28ee69b408fa25a13"}'
-    ></script>
+    <!-- External scripts will be conditionally loaded by the main application -->
   </body>
 </html>

@@ -76,6 +76,16 @@ export abstract class DefaultServerConfig implements ServerConfig {
   stripePublishableKey(): string {
     return process.env.STRIPE_PUBLISHABLE_KEY ?? "";
   }
+  // Feature toggles for external services - enabled by default in production
+  stripeEnabled(): boolean {
+    return process.env.ENABLE_STRIPE === "false" ? false : true;
+  }
+  analyticsEnabled(): boolean {
+    return process.env.ENABLE_ANALYTICS === "false" ? false : true;
+  }
+  adsEnabled(): boolean {
+    return process.env.ENABLE_ADS === "false" ? false : true;
+  }
   domain(): string {
     return process.env.DOMAIN ?? "";
   }

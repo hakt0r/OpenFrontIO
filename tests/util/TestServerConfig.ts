@@ -1,7 +1,7 @@
 import { JWK } from "jose";
 import { GameEnv, ServerConfig } from "../../src/core/configuration/Config";
-import { GameMapType } from "../../src/core/game/Game";
-import { GameID } from "../../src/core/Schemas";
+import { GameMapType, GameMode } from "../../src/core/game/Game";
+import { GameID, TeamCountConfig } from "../../src/core/Schemas";
 
 export class TestServerConfig implements ServerConfig {
   allowedFlares(): string[] | undefined {
@@ -52,7 +52,11 @@ export class TestServerConfig implements ServerConfig {
   gameCreationRate(): number {
     throw new Error("Method not implemented.");
   }
-  lobbyMaxPlayers(map: GameMapType): number {
+  lobbyMaxPlayers(
+    map: GameMapType,
+    mode: GameMode,
+    numPlayerTeams: TeamCountConfig | undefined,
+  ): number {
     throw new Error("Method not implemented.");
   }
   numWorkers(): number {
@@ -94,4 +98,14 @@ export class TestServerConfig implements ServerConfig {
   r2SecretKey(): string {
     throw new Error("Method not implemented.");
   }
-}
+  // Feature toggle methods - disabled for tests
+  stripeEnabled(): boolean {
+    return false;
+  }
+  analyticsEnabled(): boolean {
+    return false;
+  }
+  adsEnabled(): boolean {
+    return false;
+  }
+} 
