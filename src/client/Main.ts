@@ -20,7 +20,7 @@ import { JoinPrivateLobbyModal } from "./JoinPrivateLobbyModal";
 import "./LangSelector";
 import type { LangSelector } from "./LangSelector";
 import type { LanguageModal } from "./LanguageModal";
-import { MapEditor } from "./components/editor/Editor";
+import { MapEditor } from "./components/editor";
 import { NewsModal } from "./NewsModal";
 import "./PublicLobby";
 import type { PublicLobby } from "./PublicLobby";
@@ -85,7 +85,7 @@ class Client {
   private publicLobby: PublicLobby;
   private userSettings: UserSettings = new UserSettings();
 
-  constructor() {}
+  constructor() { }
 
   initialize(): void {
     const gameVersion = document.getElementById(
@@ -182,16 +182,16 @@ class Client {
     mapEditor instanceof MapEditor;
     const mapEditorButton = document.getElementById("map-editor-button");
     if (mapEditorButton === null) throw new Error("Missing map-editor-button");
-    
+
     // Show map editor button only in dev environment  
     getServerConfigFromClient().then(config => {
       if (config.env() === GameEnv.Dev) {
         mapEditorButton.hidden = false;
       }
     });
-    
+
     mapEditorButton.addEventListener("click", () => {
-              mapEditor.open();
+      mapEditor.open();
     });
 
     // const ctModal = document.querySelector("chat-modal") as ChatModal;
@@ -318,7 +318,7 @@ class Client {
         // Authorized
         console.log(
           `Your player ID is ${userMeResponse.player.publicId}\n` +
-            "Sharing this ID will allow others to view your game history and stats.",
+          "Sharing this ID will allow others to view your game history and stats.",
         );
         loginDiscordButton.translationKey = "main.logged_in";
         loginDiscordButton.hidden = true;
@@ -539,12 +539,12 @@ document.addEventListener("DOMContentLoaded", () => {
 async function initializeExternalServices() {
   try {
     const config = await getServerConfigFromClient();
-    
+
     // Initialize analytics if enabled
     if (config.analyticsEnabled()) {
       initializeAnalytics();
     }
-    
+
     // Initialize ads if enabled
     if (config.adsEnabled()) {
       initializeAds();
@@ -562,7 +562,7 @@ function initializeAnalytics() {
   document.head.appendChild(gaScript1);
 
   window.dataLayer = window.dataLayer || [];
-  (window as any).gtag = function() {
+  (window as any).gtag = function () {
     window.dataLayer.push(arguments);
   };
   (window as any).gtag("js", new Date());

@@ -17,3 +17,45 @@
   --secondaryColorHover: #bfdbfe;
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --editor-background: #f8f9fa;
+  --editor-border: #b0b0b0;
+  --editor-button-active-background: #1d4fd836;
+  --editor-button-active-text: #ffffff;
+  --editor-component-background: #ffffff;
+  --editor-error-background-hover: #c9302c;
+  --editor-error-background: #d9534f;
+  --editor-error-text: #ffffff;
+  --editor-input-background: #b0e5ffff;
+  --editor-input-text: #495057;
+  --editor-primary-hover: #0057b367;
+  --editor-primary: #007bff;
+  --editor-secondary-hover: #5a6268;
+  --editor-secondary: #6c757d;
+  --editor-text-against-color: #e0e0e0;
+  --editor-text: #212529;
+}
+
+.dark {
+  --editor-background: #121212;
+  --editor-border: #333333;
+  --editor-button-active-background: #1d4fd81f;
+  --editor-button-active-text: #ffffff;
+  --editor-component-background: #1e1e1e;
+  --editor-error-background-hover: #c9302c;
+  --editor-error-background: #d9534f;
+  --editor-error-text: #ffffff;
+  --editor-input-background: #2a2a2a;
+  --editor-input-text: #495057;
+  --editor-input-text: #cccccc;
+  --editor-primary-hover: #1d4ed8;
+  --editor-primary: #2563eb;
+  --editor-secondary-hover: #4b5563;
+  --editor-secondary: #c9c9c9ff;
+  --editor-text-against-color: #e0e0e0;
+  --editor-text: #e0e0e0;
+}

@@ -1,0 +1,67 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.0.4/schema.json",
+  "files": {
+    "includes": ["**/*.js", "**/*.json", "**/*.ts", "!build/**", "!src/lib/bun_python/**"]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "lineWidth": 200
+  },
+  "assist": { "actions": { "source": { "organizeImports": "off" } } },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "suspicious": {
+        "noDebugger": "off",
+        "noAssignInExpressions": "off",
+        "noControlCharactersInRegex": "off",
+        "noConsole": { "level": "off", "options": { "allow": ["log"] } },
+        "noExplicitAny": "off"
+      },
+      "correctness": {
+        "noUnusedFunctionParameters": "off",
+        "noUnusedVariables": "off",
+        "noUnusedImports": "off"
+      },
+      "style": {
+        "useNamingConvention": "off",
+        "useDefaultParameterLast": "off",
+        "noParameterAssign": "off",
+        "noShoutyConstants": "warn",
+        "useSingleVarDeclarator": "off",
+        "noUselessElse": "off",
+        "useAsConstAssertion": "error",
+        "useEnumInitializers": "error",
+        "useSelfClosingElements": "error",
+        "noUnusedTemplateLiteral": "error",
+        "useNumberNamespace": "error",
+        "noInferrableTypes": "error"
+      },
+      "complexity": {
+        "noForEach": "off",
+        "noStaticOnlyClass": "off",
+        "noCommaOperator": "off"
+      },
+      "performance": {
+        "noDelete": "off",
+        "noAccumulatingSpread": "off"
+      },
+      "a11y": {
+        "useHtmlLang": "off",
+        "useAltText": "off"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "lineWidth": 120,
+      "semicolons": "asNeeded"
+    }
+  },
+  "json": {
+    "formatter": {
+      "enabled": false
+    }
+  }
+}

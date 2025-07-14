@@ -183,4 +183,30 @@ export interface Theme {
   allyColor(): Colord;
   enemyColor(): Colord;
   spawnHighlightColor(): Colord;
+  // Terrain color accessors for editor
+  getWaterColor(): Colord;
+  getShoreColor(): Colord;
+  getPlainsBaseColor(): Colord;
+  getHighlandBaseColor(): Colord;
+  getMountainBaseColor(): Colord;
+
+  // Editor specific colors
+  editor: {
+    background: Colord;
+    text: Colord;
+    textAgainst: Colord;
+    border: Colord;
+    primary: Colord;
+    primaryHover: Colord;
+    secondary: Colord;
+    secondaryHover: Colord;
+    componentBackground: Colord;
+    inputBackground: Colord;
+    inputText: Colord;
+    buttonActiveBackground: Colord;
+    buttonActiveText: Colord;
+    errorBackground: Colord;
+    errorText: Colord;
+    errorBackgroundHover: Colord;
+  };
 }
