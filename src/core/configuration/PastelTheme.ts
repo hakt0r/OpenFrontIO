@@ -17,7 +17,7 @@ export class PastelTheme implements Theme {
   private teamColorAllocator = new ColorAllocator(humanColors, fallbackColors);
   private nationColorAllocator = new ColorAllocator(nationColors, nationColors);
 
-  private background = colord({ r: 60, g: 60, b: 60 });
+  private background = colord("#f0f0f0");
   private shore = colord({ r: 204, g: 203, b: 158 });
   private falloutColors = [
     colord({ r: 120, g: 255, b: 71 }), // Original color
@@ -165,5 +165,45 @@ export class PastelTheme implements Theme {
 
   spawnHighlightColor(): Colord {
     return this._spawnHighlightColor;
+  }
+
+  // Terrain color accessors for editor
+  getWaterColor(): Colord {
+    return this.water;
+  }
+
+  getShoreColor(): Colord {
+    return this.shore;
+  }
+
+  getPlainsBaseColor(): Colord {
+    return colord({ r: 190, g: 220, b: 138 });
+  }
+
+  getHighlandBaseColor(): Colord {
+    return colord({ r: 200, g: 183, b: 138 });
+  }
+
+  getMountainBaseColor(): Colord {
+    return colord({ r: 230, g: 230, b: 230 });
+  }
+
+  editor = {
+    background: colord('#ffffff'),
+    text: colord('#212529'),
+    textAgainst: colord('#ffffff'),
+    border: colord('#dee2e6'),
+    primary: colord('#0d6efd'),
+    primaryHover: colord('#0b5ed7'),
+    secondary: colord('#6c757d'),
+    secondaryHover: colord('#5c636a'),
+    componentBackground: colord('#f8f9fa'),
+    inputBackground: colord('#ffffff'),
+    inputText: colord('#212529'),
+    buttonActiveBackground: colord('#0d6efd'),
+    buttonActiveText: colord('#ffffff'),
+    errorBackground: colord('#f8d7da'),
+    errorText: colord('#842029'),
+    errorBackgroundHover: colord('#f1c6cb'),
   }
 }
