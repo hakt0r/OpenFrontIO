@@ -9,10 +9,10 @@ import { TailwindElement } from './TailwindElement'
 
 @customElement('webgl-canvas')
 export class Canvas extends TailwindElement {
+  protected props = ['mapState', 'transform', 'hoverCoords', 'hoverTerrainInfo', 'isDarkMode']
   @query('#map-canvas') public canvas!: HTMLCanvasElement
 
   private renderLoop: number | null = null
-  private unsubscribeCallbacks: Array<() => void> = []
 
   async firstUpdated(): Promise<void> {
     await this.initializeEngine()
@@ -20,11 +20,6 @@ export class Canvas extends TailwindElement {
     this.startRenderLoop()
     await this.updateComplete
     this.resizeCanvas()
-    
-    // Subscribe to signals that affect rendering
-    this.unsubscribeCallbacks.push(
-      this.context.isDarkMode.subscribe(() => this.updateTerrainColorsFromTheme())
-    )
   }
 
   disconnectedCallback(): void {
@@ -32,13 +27,15 @@ export class Canvas extends TailwindElement {
     this.stopRenderLoop()
     this.engine?.dispose()
     if (this.canvas) this.canvas.removeEventListener('mouseleave', this.onMouseLeave)
-    
-    // Clean up subscriptions
-    this.unsubscribeCallbacks.forEach(unsubscribe => unsubscribe())
-    this.unsubscribeCallbacks = []
   }
 
-  // Removed updated method - theme changes now handled by signal subscription
+  updated(changedProperties: Map<string | number | symbol, unknown>) {
+    super.updated(changedProperties)
+    // Update theme when isDarkMode changes
+    if (this.props.includes('isDarkMode')) {
+      this.updateTerrainColorsFromTheme()
+    }
+  }
 
   private updateTerrainColorsFromTheme(): void {
     if (!this.engine || !this.editor) return

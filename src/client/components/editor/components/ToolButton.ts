@@ -20,8 +20,7 @@ export const styles = {
 
 @customElement('tool-button')
 export class ToolButton extends EButton {
-  // Subscribe to only the signals this component actually needs
-  private unsubscribeCallbacks: Array<() => void> = []
+  protected props = ['currentTool', 'currentBrush']
 
   @property({ type: String }) type = 'tool'
   @property({ type: String }) value = 'brush'
@@ -45,23 +44,6 @@ export class ToolButton extends EButton {
   constructor() {
     super()
     this.classes = 'w-full'
-  }
-
-  connectedCallback() {
-    super.connectedCallback()
-    
-    // Subscribe only to the signals this component needs
-    this.unsubscribeCallbacks.push(
-      this.context.currentTool.subscribe(() => this.requestUpdate()),
-      this.context.currentBrush.subscribe(() => this.requestUpdate())
-    )
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback()
-    // Clean up subscriptions
-    this.unsubscribeCallbacks.forEach(unsubscribe => unsubscribe())
-    this.unsubscribeCallbacks = []
   }
 
   willUpdate(changedProperties: Map<string | number | symbol, unknown>) {

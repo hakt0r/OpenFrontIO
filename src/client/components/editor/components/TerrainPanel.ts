@@ -10,34 +10,18 @@ import { EditorTool, getEngineBrushValues, type SidebarConfig } from '../types'
 
 @customElement('terrain-panel')
 export class TerrainPanel extends TailwindElement {
-  private unsubscribeCallbacks: Array<() => void> = []
+  protected props = ['isTerrainVisible', 'currentTool', 'currentBrush', 'brushSize', 'brushMagnitude', 'heightmapMaxSize', 'heightmapClampMin', 'heightmapClampMax']
 
   connectedCallback() {
     super.connectedCallback()
     document.addEventListener('wheel', this.onWheel, { passive: false })
     document.addEventListener('keydown', this.onKey)
-    
-    // Subscribe to signals this component needs
-    this.unsubscribeCallbacks.push(
-      this.context.isTerrainVisible.subscribe(() => this.requestUpdate()),
-      this.context.currentTool.subscribe(() => this.requestUpdate()),
-      this.context.currentBrush.subscribe(() => this.requestUpdate()),
-      this.context.brushSize.subscribe(() => this.requestUpdate()),
-      this.context.brushMagnitude.subscribe(() => this.requestUpdate()),
-      this.context.heightmapMaxSize.subscribe(() => this.requestUpdate()),
-      this.context.heightmapClampMin.subscribe(() => this.requestUpdate()),
-      this.context.heightmapClampMax.subscribe(() => this.requestUpdate())
-    )
   }
 
   disconnectedCallback() {
     super.disconnectedCallback()
     document.removeEventListener('wheel', this.onWheel)
     document.removeEventListener('keydown', this.onKey)
-    
-    // Clean up subscriptions
-    this.unsubscribeCallbacks.forEach(unsubscribe => unsubscribe())
-    this.unsubscribeCallbacks = []
   }
 
   private onWheel = (e: WheelEvent): void => {
@@ -111,39 +95,7 @@ export class TerrainPanel extends TailwindElement {
     }
   }
 
-  private changeControl = (event: CustomEvent) => {
-    const { controlId, value } = event.detail.value || event.detail
-    const engine = this.context.engine.value
-    if (!engine) return
-
-    const controlHandlers: Record<string, (v: any) => void> = {
-      brushSize: (v) => {
-        this.context.brushSize.value = v
-        engine.setBrushRadius(v)
-      },
-      brushMagnitude: (v) => {
-        this.context.brushMagnitude.value = v
-        engine.setBrushMagnitude(v)
-      },
-      heightmapMaxSize: (v) => {
-        this.context.heightmapMaxSize.value = v
-        if (this.editor?.currentHeightmapImage)
-          this.editor.heightmapToolbar?.debouncedUpdateHeightmap()
-      },
-      heightmapClampMin: (v) => {
-        this.context.heightmapClampMin.value = Math.min(v, this.context.heightmapClampMax.value - 0.01)
-        if (this.editor?.currentHeightmapImage)
-          this.editor.heightmapToolbar?.debouncedUpdateHeightmap()
-      },
-      heightmapClampMax: (v) => {
-        this.context.heightmapClampMax.value = Math.max(v, this.context.heightmapClampMin.value + 0.01)
-        if (this.editor?.currentHeightmapImage)
-          this.editor.heightmapToolbar?.debouncedUpdateHeightmap()
-      },
-    }
-
-    controlHandlers[controlId]?.(value)
-  }
+  // Removed changeControl - RangeControl now handles updates directly
 
   show = () => {
     this.context.isTerrainVisible.value = true
@@ -174,11 +126,11 @@ export class TerrainPanel extends TailwindElement {
         </sidebar-brush-section>
         <bezel-panel>
           <section-header title="Controls"></section-header>
-          <range-control id="brushSize" name="brushSize" type="range" min="1" max="20" step="1" helpText="Wheel" @change=${this.changeControl}></range-control>
-          <range-control id="brushMagnitude" name="brushMagnitude" type="range" min="1" max="31" step="1" helpText="Ctrl-Alt-Wheel" @change=${this.changeControl}></range-control>
-          <range-control id="maxSize" name="heightmapMaxSize" type="range" min="256" max="8192" step="256" helpText="Resolution" @change=${this.changeControl}></range-control>
-          <range-control id="clampMin" name="heightmapClampMin" type="range" min="0" max="1" step="0.01" @change=${this.changeControl}></range-control>
-          <range-control id="clampMax" name="heightmapClampMax" type="range" min="0" max="1" step="0.01" @change=${this.changeControl}></range-control>
+          <range-control id="brushSize" name="brushSize" type="range" min="1" max="20" step="1" helpText="Wheel"></range-control>
+          <range-control id="brushMagnitude" name="brushMagnitude" type="range" min="1" max="31" step="1" helpText="Ctrl-Alt-Wheel"></range-control>
+          <range-control id="maxSize" name="heightmapMaxSize" type="range" min="256" max="8192" step="256" helpText="Resolution"></range-control>
+          <range-control id="clampMin" name="heightmapClampMin" type="range" min="0" max="1" step="0.01"></range-control>
+          <range-control id="clampMax" name="heightmapClampMax" type="range" min="0" max="1" step="0.01"></range-control>
         </bezel-panel>
      </div>
     `

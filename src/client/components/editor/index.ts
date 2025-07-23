@@ -38,6 +38,7 @@ import { provide } from '@lit/context'
 
 @customElement('map-editor')
 export class MapEditor extends TailwindElement {
+  protected props = ['isDarkMode', 'currentTool', 'brushSize', 'currentBrush']
   private resizeObserver: ResizeObserver | null = null
   private resizeTimeout: ReturnType<typeof setTimeout> | null = null
 
@@ -111,14 +112,6 @@ export class MapEditor extends TailwindElement {
     this.context.transform.value = { zoom: 1, panX: 0, panY: 0 }
     this.context.mapState.value = initializeMap()
 
-    // Subscribe only to signals that affect the main editor component
-    this.context.isDarkMode.subscribe(() => this.requestUpdate())
-    this.context.currentTool.subscribe(() => this.updateCursor())
-    this.context.brushSize.subscribe(() => this.updateCursor())
-    this.context.currentBrush.subscribe(() => {
-      this.context.currentTool.value = 'paint'
-    })
-
     // Only keep error handling for actual errors
     this.addEventListener('error', this.handleComponentError)
   }
@@ -152,9 +145,16 @@ export class MapEditor extends TailwindElement {
       this.renderer = this.context.engine.value
     }
 
-    if (this.context.isDarkMode.value !== this.userSettings.darkMode()) {
+    // Handle signal changes
+    if (this.props.includes('isDarkMode')) {
       this.setAttribute('theme', this.context.isDarkMode.value ? 'dark' : 'light')
       this.updateTheme()
+    }
+    if (this.props.includes('currentTool') || this.props.includes('brushSize')) {
+      this.updateCursor()
+    }
+    if (this.props.includes('currentBrush')) {
+      this.context.currentTool.value = 'paint'
     }
   }
 

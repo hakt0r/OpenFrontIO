@@ -15,8 +15,38 @@ export class SidebarRangeControl extends TailwindElement {
     super()
   }
 
-  private _dispatchControlChange(controlId: string, value: number | string) {
-    this.emitChange({ controlId, value })
+  private _handleControlChange(controlId: string, value: number | string) {
+    const numValue = Number(value)
+    const engine = this.context.engine.value
+    
+    // Update signal and handle side effects based on control type
+    switch (controlId) {
+      case 'brushSize':
+        this.context.brushSize.value = numValue
+        engine?.setBrushRadius(numValue)
+        break
+      case 'brushMagnitude':
+        this.context.brushMagnitude.value = numValue
+        engine?.setBrushMagnitude(numValue)
+        break
+      case 'heightmapMaxSize':
+        this.context.heightmapMaxSize.value = numValue
+        if (this.editor?.currentHeightmapImage)
+          this.editor.heightmapToolbar?.debouncedUpdateHeightmap()
+        break
+      case 'heightmapClampMin':
+        this.context.heightmapClampMin.value = Math.min(numValue, this.context.heightmapClampMax.value - 0.01)
+        if (this.editor?.currentHeightmapImage)
+          this.editor.heightmapToolbar?.debouncedUpdateHeightmap()
+        break
+      case 'heightmapClampMax':
+        this.context.heightmapClampMax.value = Math.max(numValue, this.context.heightmapClampMin.value + 0.01)
+        if (this.editor?.currentHeightmapImage)
+          this.editor.heightmapToolbar?.debouncedUpdateHeightmap()
+        break
+      default:
+        this.context[controlId].value = numValue
+    }
   }
 
   render() {
@@ -48,7 +78,7 @@ export class SidebarRangeControl extends TailwindElement {
             max="${max}"
             step="${step}"
             .value=${currentValue}
-            @input=${(e: Event) => this._dispatchControlChange(this.name, Number((e.target as HTMLInputElement).value))}
+            @input=${(e: Event) => this._handleControlChange(this.name, Number((e.target as HTMLInputElement).value))}
             class="w-full appearance-none h-1 rounded bg-transparent outline-none opacity-70 transition-opacity duration-200 [&:hover]:opacity-100 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-editor-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-[0_2px_4px_rgba(0,0,0,0.3)] [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:duration-200 [&::-webkit-slider-thumb]:ease-in-out [&::-webkit-slider-thumb:hover]:scale-120 [&::-webkit-slider-thumb:hover]:shadow-[0_3px_6px_rgba(0,0,0,0.4)] [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-editor-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:shadow-[0_2px_4px_rgba(0,0,0,0.3)] relative"
             />
         </div>

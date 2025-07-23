@@ -1,5 +1,5 @@
 import { consume } from '@lit/context'
-import { EditorStore, editorContext } from '../editor-store'
+import { EditorStore, editorContext, type EditorStoreKey } from '../editor-store'
 import { EditorEngine } from '../engine'
 import { LitElement } from 'lit'
 import { property } from 'lit/decorators.js'
@@ -29,6 +29,8 @@ export class TailwindElement extends LitElement {
   @property({ type: Object }) styles = styles
 
   private styleTag: HTMLLinkElement = null as unknown as HTMLLinkElement
+  protected props: Array<EditorStoreKey> = []
+  private unsubscribeCallbacks: Array<() => void> = []
 
   public get editor(): MapEditor {
     return this.context.editor.value
@@ -36,6 +38,25 @@ export class TailwindElement extends LitElement {
 
   public get engine(): EditorEngine | null {
     return this.context.engine.value
+  }
+
+  connectedCallback() {
+    super.connectedCallback()
+    
+    // Auto-subscribe to signals declared in props
+    if (this.props.length > 0) {
+      this.unsubscribeCallbacks = this.props.map(propKey => 
+        this.context[propKey].subscribe(() => this.requestUpdate())
+      )
+    }
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback()
+    
+    // Auto-cleanup subscriptions
+    this.unsubscribeCallbacks.forEach(unsubscribe => unsubscribe())
+    this.unsubscribeCallbacks = []
   }
 
   protected emit<T = any>(eventName: string, detail?: T, options?: CustomEventInit) {
@@ -64,8 +85,6 @@ export class TailwindElement extends LitElement {
   createRenderRoot() {
     return this.attachShadow({ mode: 'open' })
   }
-
-  // Removed shouldUpdate - components now manage their own subscriptions
 
   updated(changedProperties: Map<string | number | symbol, unknown>) {
     if (!document.tailwindSource) readTailwindSource()
