@@ -24,11 +24,12 @@ const readTailwindSource = () => {
 }
 
 export class TailwindElement extends LitElement {
-  @consume({ context: editorContext, subscribe: true }) @property({ attribute: false }) public context!: EditorStore
+  @consume({ context: editorContext, subscribe: false }) @property({ attribute: false }) public context!: EditorStore
   @property({ type: Object }) styles = styles
 
   private styleTag: HTMLLinkElement = null as unknown as HTMLLinkElement
   protected props: Array<string> = null as unknown as Array<string>
+  private _contextSubscriptions: Array<() => void> = []
 
   public get editor(): MapEditor {
     return this.context.editor.value
@@ -62,12 +63,60 @@ export class TailwindElement extends LitElement {
     return this.emit('action', { action, data })
   }
 
+  connectedCallback() {
+    super.connectedCallback()
+    this._setupContextSubscriptions()
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback()
+    this._cleanupContextSubscriptions()
+  }
+
+  private _setupContextSubscriptions() {
+    if (!this.context || !this.props) return
+
+    // Subscribe only to the specific context properties defined in props
+    for (const prop of this.props) {
+      if (this.context[prop] && typeof this.context[prop].subscribe === 'function') {
+        const unsubscribe = this.context[prop].subscribe(() => {
+          this.requestUpdate()
+        })
+        this._contextSubscriptions.push(unsubscribe)
+      }
+    }
+  }
+
+  private _cleanupContextSubscriptions() {
+    this._contextSubscriptions.forEach(unsubscribe => unsubscribe())
+    this._contextSubscriptions = []
+  }
+
   createRenderRoot() {
     return this.attachShadow({ mode: 'open' })
   }
 
   shouldUpdate(changedProperties: Map<string | number | symbol, unknown>) {
+    // If no specific props are defined, use default behavior
     if (!this.props) return super.shouldUpdate(changedProperties)
+    
+    // Check if context changed
+    if (changedProperties.has('context')) {
+      // If component defines specific props to watch, only update if those props changed
+      if (this.props.length > 0) {
+        // Check if any of the watched context properties changed
+        const previousContext = changedProperties.get('context') as EditorStore
+        if (!previousContext) return true // First time, should update
+        
+        for (const prop of this.props) {
+          if (previousContext[prop]?.value !== this.context[prop]?.value) {
+            return true
+          }
+        }
+        return false // None of the watched props changed
+      }
+    }
+    
     return super.shouldUpdate(changedProperties)
   }
 
