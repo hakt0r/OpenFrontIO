@@ -20,6 +20,9 @@ import { handleMouseDown, handleLeftClick, handleDrag, handleDrawing, handleZoom
 import { PastelTheme } from './../../../core/configuration/PastelTheme'
 import { PastelThemeDark } from './../../../core/configuration/PastelThemeDark'
 import { UserSettings } from '../../../core/game/UserSettings'
+import { EditorEngine } from './engine'
+import { extractTerrainColorsFromTheme } from './engine/theme'
+import { DEBUG_RENDER_MODE } from './engine/debug'
 
 import type { Canvas } from './components/Canvas'
 import type { EditorEngine } from './engine'
@@ -41,6 +44,7 @@ export class MapEditor extends TailwindElement {
   protected props = ['isDarkMode', 'currentTool', 'brushSize', 'currentBrush']
   private resizeObserver: ResizeObserver | null = null
   private resizeTimeout: ReturnType<typeof setTimeout> | null = null
+  private renderLoop: number | null = null
 
   @provide({ context: editorContext })
   context: EditorStore = editorStore
@@ -147,9 +151,84 @@ export class MapEditor extends TailwindElement {
     this.renderer = this.context.engine.value
     
     if (this.context.mapState.value.gameMap) {
-      await this.webglCanvas?.updateTerrainData()
+      await this.updateTerrainData()
     }
+    this.startRenderLoop()
+    this.resizeCanvas()
     this.centerAndFit()
+  }
+
+  private startRenderLoop(): void {
+    this.renderLoop = requestAnimationFrame(this.__render)
+  }
+
+  private stopRenderLoop(): void {
+    if (this.renderLoop == null) return
+    cancelAnimationFrame(this.renderLoop)
+    this.renderLoop = null
+  }
+
+  private __render = () => {
+    if (this.renderer) this.renderer.render(this.context.mapState.value)
+    this.renderLoop = requestAnimationFrame(this.__render)
+  }
+
+  public resizeCanvas(): void {
+    const canvas = this.webglCanvas?.canvas
+    if (!canvas || !this.renderer) return
+
+    const container = canvas.parentElement
+    if (!container) return
+
+    const containerRect = container.getBoundingClientRect()
+    const pixelRatio = window.devicePixelRatio || 1
+    canvas.width = containerRect.width * pixelRatio
+    canvas.height = containerRect.height * pixelRatio
+    this.renderer.resize()
+  }
+
+  public centerAndFit(): void {
+    if (!this.renderer) return
+
+    const canvas = this.webglCanvas?.canvas
+    if (!canvas) return
+
+    const mapDimensions = this.renderer.chunkManager.mapDimensions
+
+    if (mapDimensions.width === 0 || mapDimensions.height === 0) {
+      return
+    }
+
+    const canvasRect = canvas.getBoundingClientRect()
+    const canvasWidth = canvasRect.width
+    const canvasHeight = canvasRect.height
+
+    const scaleX = canvasWidth / mapDimensions.width
+    const scaleY = canvasHeight / mapDimensions.height
+    const zoom = Math.min(scaleX, scaleY) * 0.9
+
+    const transform = {
+      zoom,
+      panX: 0,
+      panY: 0,
+    }
+
+    this.context.transform.value = transform
+    this.renderer.setTransform(transform)
+  }
+
+  public async updateTerrainData(): Promise<void> {
+    if (!this.renderer || !this.context.mapState.value.gameMap) return
+
+    const gameMap = this.context.mapState.value.gameMap
+    const width = gameMap.width()
+    const height = gameMap.height()
+    const gameMapWithTerrain = gameMap as any
+    const terrainData = gameMapWithTerrain.terrain as Uint8Array
+
+    await this.renderer.loadServerMap(terrainData, width, height)
+
+    if (DEBUG_RENDER_MODE) setInterval(() => this.renderer?.debugRenderSample(), 2000)
   }
 
   async updated(changedProperties: Map<string | number | symbol, unknown>) {
