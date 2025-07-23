@@ -4,7 +4,7 @@ import './RangeControl'
 import { customElement, property } from 'lit/decorators.js'
 import { html } from 'lit'
 import { TailwindElement } from './TailwindElement'
-import { switchTool, changeBrushSize, switchBrushType } from '../engine/actions'
+import { switchTool, switchBrushType } from '../engine/actions'
 
 import { EditorTool } from '../types'
 
@@ -45,7 +45,8 @@ export class TerrainPanel extends TailwindElement {
       e.preventDefault()
       e.stopPropagation()
       const delta = e.deltaY > 0 ? -1 : 1
-      this.editor.setBrushMagnitude(Math.max(1, Math.min(31, context.brushMagnitude.value + delta)))
+      const newMagnitude = Math.max(1, Math.min(31, context.brushMagnitude.value + delta))
+      this.editor.setBrushMagnitude(newMagnitude)
       return
     }
 
@@ -68,8 +69,7 @@ export class TerrainPanel extends TailwindElement {
     if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
       e.preventDefault()
       e.stopPropagation()
-      const newSize = changeBrushSize(context.brushSize.value, e.deltaY > 0 ? -1 : 1)
-      this.editor.setBrushSize(newSize)
+      this.editor.adjustBrushSize(e.deltaY > 0 ? -1 : 1)
       return
     }
   }

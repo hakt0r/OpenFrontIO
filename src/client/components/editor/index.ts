@@ -293,8 +293,8 @@ export class MapEditor extends TailwindElement {
     }
   }
 
-  // Orchestration methods that coordinate UI + Engine
-  private adjustBrushSize(delta: number): void {
+  // SINGLE SOURCE OF TRUTH for all editor actions
+  public adjustBrushSize(delta: number): void {
     const newSize = Math.max(1, Math.min(50, this.context.brushSize.value + delta))
     this.setBrushSize(newSize)
   }
@@ -313,6 +313,33 @@ export class MapEditor extends TailwindElement {
     this.renderer?.setBrushCenter(x, y)
   }
 
+  public setHeightmapMaxSize(size: number): void {
+    this.context.heightmapMaxSize.value = size
+    this.heightmapToolbar?.debouncedUpdateHeightmap?.()
+  }
+
+  public setHeightmapClampMin(value: number): void {
+    this.context.heightmapClampMin.value = Math.min(value, this.context.heightmapClampMax.value - 0.01)
+    this.heightmapToolbar?.debouncedUpdateHeightmap?.()
+  }
+
+  public setHeightmapClampMax(value: number): void {
+    this.context.heightmapClampMax.value = Math.max(value, this.context.heightmapClampMin.value + 0.01)
+    this.heightmapToolbar?.debouncedUpdateHeightmap?.()
+  }
+
+  public setTool(tool: EditorTool): void {
+    this.context.currentTool.value = tool
+    this.updateEngineFromContext()
+  }
+
+  public setBrush(brush: BrushType): void {
+    this.context.currentBrush.value = brush
+    this.context.currentTool.value = 'paint' // Auto-switch to paint tool
+    this.updateEngineFromContext()
+  }
+
+  // Internal wheel handler logic
   private cycleTool(delta: number): void {
     if (this.context.currentTool.value === 'paint') {
       this.cycleBrush(delta)
@@ -329,17 +356,6 @@ export class MapEditor extends TailwindElement {
     const currentIndex = brushes.indexOf(this.context.currentBrush.value)
     const newIndex = (currentIndex + delta + brushes.length) % brushes.length
     this.setBrush(brushes[newIndex] as any)
-  }
-
-  public setTool(tool: EditorTool): void {
-    this.context.currentTool.value = tool
-    this.updateEngineFromContext()
-  }
-
-  public setBrush(brush: BrushType): void {
-    this.context.currentBrush.value = brush
-    this.context.currentTool.value = 'paint' // Auto-switch to paint tool
-    this.updateEngineFromContext()
   }
 
   private updateEngineFromContext(): void {
