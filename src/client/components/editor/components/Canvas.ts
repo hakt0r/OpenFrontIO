@@ -90,8 +90,7 @@ export class Canvas extends TailwindElement {
   }
 
   private onMouseLeave = (): void => {
-    if (!this.engine) return
-    this.engine.setBrushCenter(-1000, -1000)
+    this.editor.setBrushCenter?.(-1000, -1000) ?? this.engine?.setBrushCenter(-1000, -1000)
     this.context.hoverCoords.value = null
     this.context.hoverTerrainInfo.value = null
   }

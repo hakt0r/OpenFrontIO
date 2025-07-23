@@ -20,8 +20,7 @@ export class SidebarRangeControl extends TailwindElement {
   }
 
   private updateBrushMagnitude = (value: number) => {
-    this.context.brushMagnitude.value = value
-    this.context.engine.value?.setBrushMagnitude(value)
+    this.editor.setBrushMagnitude?.(value) ?? (this.context.brushMagnitude.value = value, this.context.engine.value?.setBrushMagnitude(value))
   }
 
   private updateHeightmapMaxSize = (value: number) => {

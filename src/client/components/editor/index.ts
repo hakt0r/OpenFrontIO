@@ -242,13 +242,13 @@ export class MapEditor extends TailwindElement {
           y: Math.floor(coords.y),
         }
         // this.context.hoverTerrainInfo.value = this.getTerrainInfo(Math.floor(coords.x), Math.floor(coords.y))
-        this.renderer.setBrushCenter(coords.x, coords.y)
-        this.renderer.setBrushRadius(this.context.brushSize.value)
+        this.setBrushCenter(coords.x, coords.y)
+        this.setBrushSize(this.context.brushSize.value)
         this.requestUpdate()
       } else {
         this.context.hoverCoords.value = null
         this.context.hoverTerrainInfo.value = null
-        this.renderer.setBrushCenter(-1000, -1000)
+        this.setBrushCenter(-1000, -1000)
         this.requestUpdate()
       }
     }
@@ -315,6 +315,10 @@ export class MapEditor extends TailwindElement {
     this.renderer?.setBrushMagnitude(magnitude)
   }
 
+  public setBrushCenter(x: number, y: number): void {
+    this.renderer?.setBrushCenter(x, y)
+  }
+
   private cycleTool(delta: number): void {
     if (this.context.currentTool.value === 'paint') {
       this.cycleBrush(delta)
@@ -348,7 +352,7 @@ export class MapEditor extends TailwindElement {
     if (!this.renderer) return
     const [engineBrushType, brushMagnitude] = getEngineBrushValues(this.context)
     this.renderer.setBrushType(engineBrushType)
-    this.renderer.setBrushMagnitude(brushMagnitude)
+    this.setBrushMagnitude(brushMagnitude)
   }
 
   private onContextMenu = (e: MouseEvent): void => {
