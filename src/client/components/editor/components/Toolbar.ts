@@ -233,8 +233,6 @@ export class MapEditorToggleButton extends TailwindElement {
   }
 
   private _click_ = (event: MouseEvent) => {
-    debugger
-
     const value = this.context?.[this.key]?.value || 0
     const nextValue = this.values[(value + 1) % this.values.length]
       this.context[this.key].value = nextValue

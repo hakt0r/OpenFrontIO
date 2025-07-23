@@ -16,11 +16,11 @@ export class SidebarRangeControl extends TailwindElement {
   }
 
   private updateBrushSize = (value: number) => {
-    this.editor.setBrushSize?.(value) ?? (this.context.brushSize.value = value, this.context.engine.value?.setBrushRadius(value))
+    this.editor.setBrushSize(value)
   }
 
   private updateBrushMagnitude = (value: number) => {
-    this.editor.setBrushMagnitude?.(value) ?? (this.context.brushMagnitude.value = value, this.context.engine.value?.setBrushMagnitude(value))
+    this.editor.setBrushMagnitude(value)
   }
 
   private updateHeightmapMaxSize = (value: number) => {
@@ -54,7 +54,7 @@ export class SidebarRangeControl extends TailwindElement {
       heightmapClampMax: this.updateHeightmapClampMax,
     }
 
-    updateMethods[controlId]?.(numValue) ?? this.updateDefault(controlId, numValue)
+    updateMethods[controlId]?.(numValue) || this.updateDefault(controlId, numValue)
   }
 
   render() {

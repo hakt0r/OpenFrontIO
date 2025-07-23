@@ -166,7 +166,7 @@ export class LoadMapItem extends TailwindElement {
           } as any
         }
       } catch (error) {
-        console.warn('Failed to load local map metadata:', error)
+        // Silent fallback for corrupted maps
         this.manifest = {
           name: this.mapName,
           description: 'Local map (corrupted)',
@@ -216,7 +216,7 @@ export class LoadMapItem extends TailwindElement {
   }
 }
 
-// Removed custom button components - now using standardized e-button with variants
+
 
 @customElement('load-map-loading-indicator')
 export class LoadMapLoadingIndicator extends TailwindElement {

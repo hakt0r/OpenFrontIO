@@ -6,7 +6,7 @@ import { html } from 'lit'
 import { TailwindElement } from './TailwindElement'
 import { switchTool, changeBrushSize, switchBrushType } from '../engine/actions'
 
-import { EditorTool, getEngineBrushValues, type SidebarConfig } from '../types'
+import { EditorTool } from '../types'
 
 @customElement('terrain-panel')
 export class TerrainPanel extends TailwindElement {
@@ -45,7 +45,7 @@ export class TerrainPanel extends TailwindElement {
       e.preventDefault()
       e.stopPropagation()
       const delta = e.deltaY > 0 ? -1 : 1
-      this.editor.setBrushMagnitude?.(Math.max(1, Math.min(31, context.brushMagnitude.value + delta)))
+      this.editor.setBrushMagnitude(Math.max(1, Math.min(31, context.brushMagnitude.value + delta)))
       return
     }
 
@@ -90,7 +90,7 @@ export class TerrainPanel extends TailwindElement {
     }
   }
 
-  // Removed changeControl - RangeControl now handles updates directly
+
 
   show = () => {
     this.context.isTerrainVisible.value = true

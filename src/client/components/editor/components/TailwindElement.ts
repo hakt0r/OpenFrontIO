@@ -17,7 +17,7 @@ const readTailwindSource = () => {
   const stylesheet = Array.from(document.head.querySelectorAll('style')!).filter((style) =>
     style?.textContent?.includes('p-2'),
   )[0]
-  if (!stylesheet) debugger
+  if (!stylesheet) throw new Error('Tailwind stylesheet not found')
   document.tailwindSource = stylesheet
   document.tailwindBlob = new Blob([stylesheet.textContent!], { type: 'text/css' })
   document.tailwindObjectURL = URL.createObjectURL(document.tailwindBlob)

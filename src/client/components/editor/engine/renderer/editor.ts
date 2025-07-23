@@ -246,7 +246,7 @@ export class EditorRenderer extends BaseRenderer {
   async debugRenderSample(): Promise<void> {
     const terrainData = await this.extractTerrainData()
     if (terrainData) {
-      console.log('Debug terrain sample:', terrainData.slice(0, 10))
+  
     }
   }
 

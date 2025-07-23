@@ -180,10 +180,7 @@ export class MapEditor extends TailwindElement {
 
   private setupEventListeners(): void {
     const canvas = this.webglCanvas?.webglCanvas
-    if (!canvas) {
-      console.warn('Canvas not available for event listeners')
-      return
-    }
+    if (!canvas) return
 
     // Remove existing listeners first
     canvas.removeEventListener('mousedown', this.onMouseDown)
@@ -201,7 +198,7 @@ export class MapEditor extends TailwindElement {
     canvas.addEventListener('dblclick', this.onDoubleClick)
     canvas.addEventListener('contextmenu', this.onContextMenu)
     
-    console.log('Canvas event listeners set up successfully', canvas)
+
   }
 
   private onMouseDown = (e: MouseEvent): void => {
@@ -218,10 +215,7 @@ export class MapEditor extends TailwindElement {
 
   private onMouseMove = (e: MouseEvent): void => {
     const canvas = this.canvas
-    if (!canvas) {
-      console.log('onMouseMove: canvas not available')
-      return
-    }
+    if (!canvas) return
     
     const rect = canvas.getBoundingClientRect()
     const canvasX = e.clientX - rect.left
@@ -241,7 +235,7 @@ export class MapEditor extends TailwindElement {
           x: Math.floor(coords.x),
           y: Math.floor(coords.y),
         }
-        // this.context.hoverTerrainInfo.value = this.getTerrainInfo(Math.floor(coords.x), Math.floor(coords.y))
+
         this.setBrushCenter(coords.x, coords.y)
         this.setBrushSize(this.context.brushSize.value)
         this.requestUpdate()

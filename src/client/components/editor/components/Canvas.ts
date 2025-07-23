@@ -90,7 +90,7 @@ export class Canvas extends TailwindElement {
   }
 
   private onMouseLeave = (): void => {
-    this.editor.setBrushCenter?.(-1000, -1000) ?? this.engine?.setBrushCenter(-1000, -1000)
+    this.editor.setBrushCenter(-1000, -1000)
     this.context.hoverCoords.value = null
     this.context.hoverTerrainInfo.value = null
   }
@@ -101,9 +101,8 @@ export class Canvas extends TailwindElement {
     return this.engine.canvasToMapCoordinates(canvasX, canvasY)
   }
 
-  private getTerrainInfo(_x: number, _y: number): { type: string; emoji: string; magnitude: number } | null {
-    return { type: 'Plains', emoji: '🌾', magnitude: 15 }
-  }
+  // TODO: Implement terrain info extraction from engine
+  // private getTerrainInfo(x: number, y: number): { type: string; emoji: string; magnitude: number } | null
 
   public get webglCanvas(): HTMLCanvasElement {
     return this.canvas
