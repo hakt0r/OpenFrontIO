@@ -18,16 +18,16 @@ export const styles = {
 export class EButton extends TailwindElement {
   @property({ type: Boolean }) active = false
   @property({ type: Boolean }) disabled = false
-  @property({ type: Function }) onClick: (event: MouseEvent) => void = () => {}
+  @property({ type: Function }) onclick!: (event: MouseEvent) => void
   @property({ type: Object }) styles = styles as Record<string, string>
   @property({ type: String }) classes = ''
   @property({ type: String }) icon = ''
   @property({ type: String }) title = ''
   @property({ type: String }) variant: 'primary' | 'secondary' | 'danger' | null = null
 
-  private _handleClick = (event: MouseEvent) => {
-    if (this.disabled || !this.onClick) return
-    this.onClick(event)
+  private _click_ = (event: MouseEvent) => {
+    if (this.disabled || !this.onclick) return
+    this.onclick(event)
   }
 
   render(): TemplateResult | typeof nothing {
@@ -45,7 +45,7 @@ export class EButton extends TailwindElement {
       title="${this.title}"
       class="${classes}"
       ?disabled=${this.disabled}
-      @click=${this._handleClick}
+      @click=${this._click_}
     >
       ${this.icon ? html`<span>${this.icon}</span>` : html`<span class="button-text">${this.title}</span>`}
       <slot></slot>

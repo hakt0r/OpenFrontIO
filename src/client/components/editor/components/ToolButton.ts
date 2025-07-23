@@ -21,11 +21,10 @@ export const styles = {
 @customElement('tool-button')
 export class ToolButton extends EButton {
   protected props = ['currentTool', 'currentBrush']
-  // @property({ type: String }) styles = styles
+
   @property({ type: String }) type = 'tool'
   @property({ type: String }) value = 'brush'
-
-  @property({ type: Function }) onClick = (event: MouseEvent) => {
+  @property({ type: Function }) onclick = (event: MouseEvent) => {
     const actionData = {
       type: this.type,
       value: this.value,
@@ -33,10 +32,8 @@ export class ToolButton extends EButton {
       brush: this.type === 'brush' ? allBrushes[this.value] : this.context.currentBrush.value,
     }
     
-    // Emit the action event first
     this.emitAction('tool-select', actionData)
     
-    // Then handle the state change
     const c = this.context
     c.currentTool.value = actionData.tool
     c.currentBrush.value = actionData.brush
@@ -51,13 +48,6 @@ export class ToolButton extends EButton {
   constructor() {
     super()
     this.classes = 'w-full'
-  }
-
-  connectedCallback() {
-    super.connectedCallback()
-    // Subscribe to context changes to force re-render when tools/brushes change
-    this.context.currentTool.subscribe(() => this.requestUpdate())
-    this.context.currentBrush.subscribe(() => this.requestUpdate())
   }
 
   willUpdate(changedProperties: Map<string | number | symbol, unknown>) {

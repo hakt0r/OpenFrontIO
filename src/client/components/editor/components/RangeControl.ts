@@ -4,8 +4,8 @@ import { TailwindElement } from './TailwindElement'
 
 @customElement('range-control')
 export class SidebarRangeControl extends TailwindElement {
+  protected props = ['brushSize', 'brushMagnitude', 'heightmapClampMin', 'heightmapClampMax', 'heightmapMaxSize']
   @property({ type: String }) name!: string
-  @property({ type: Number }) value!: number
   @property({ type: String }) helpText!: string
   @property({ type: Number }) min!: number
   @property({ type: Number }) max!: number
@@ -20,12 +20,11 @@ export class SidebarRangeControl extends TailwindElement {
   }
 
   render() {
-    const currentValue = this.value
+    const currentValue = this.context[this.name].value || 0
     const min = this.min || 0
     const max = this.max || 100
     const step = this.step || 1
     
-    // Create display name from property name
     const displayName = this.name
       .replace(/([A-Z])/g, ' $1')
       .replace(/^./, str => str.toUpperCase())

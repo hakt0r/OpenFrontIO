@@ -6,7 +6,8 @@ import { handleNationSubmit } from '../engine/actions'
 import { Modal } from './Modal'
 
 @customElement('nation-modal')
-export class NationModalElement extends Modal {
+export class NationModal extends Modal {
+  protected props = ['isNationVisible', 'isEditingNation', 'editingNation', 'pendingNationCoords']
   @state() private nation = ''
   @state() private flag = 'custom'
   @state() private strength = '50'
@@ -22,7 +23,7 @@ export class NationModalElement extends Modal {
   }
 
   public hide = () => {
-    this.context.isNationsVisible.value = false
+    this.context.isNationVisible.value = false
     this.nation = ''
     this.flag = 'custom'
     this.strength = '50'

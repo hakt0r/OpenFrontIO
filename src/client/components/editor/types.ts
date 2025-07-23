@@ -210,17 +210,7 @@ export function createGPUTerrainValue(terrain: TerrainType): number {
       return 0 * 32 + 15 + 0
   }
 }
-export const renderMode = {
-  0: 'Edit',
-  1: 'Satellite',
-  2: 'Heightmap',
-  3: 'Offscreen',
-  4: 'Debug',
-}
-export const renderModeIcon = {
-  0: '🎨',
-  1: '🛰️',
-  2: '🗻',
-  3: '🔍',
-  4: '🐞',
-}
+export const renderModeName = ['Edit', 'Satellite', 'Heightmap', 'Offscreen', 'Debug'] as const
+export const renderModeIcon = ['🎨', '🛰️', '🗻', '🔍', '🐞'] as const
+export type RenderMode = (typeof renderModeName)[number]
+export type RenderModeIcon = (typeof renderModeIcon)[number]

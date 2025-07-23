@@ -9,6 +9,7 @@ import { TailwindElement } from './TailwindElement'
 
 @customElement('webgl-canvas')
 export class Canvas extends TailwindElement {
+  protected props = ['mapState', 'transform', 'hoverCoords', 'hoverTerrainInfo', 'isDarkMode']
   @query('#map-canvas') public canvas!: HTMLCanvasElement
 
   private renderLoop: number | null = null
@@ -47,7 +48,7 @@ export class Canvas extends TailwindElement {
     this.context.engine.value = new EditorEngine(this.canvas, options)
     await this.context.engine.value.initialize()
     this.resizeCanvas()
-    this.context.engine.value = this.engine
+    // Remove duplicate assignment - context.engine.value already set above
     if (this.context.mapState.value.gameMap) await this.updateTerrainData()
     this.centerAndFit()
   }

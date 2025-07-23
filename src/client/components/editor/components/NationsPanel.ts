@@ -7,20 +7,27 @@ import { TailwindElement } from './TailwindElement'
 
 @customElement('nations-panel')
 export class NationsPanel extends TailwindElement {
-  @property({ type: Array }) nations: Nation[] = []
+  protected props = ['mapState', 'isNationsVisible']
   @state() isOpen = true
+
+  get nations(): Nation[] {
+    return this.context.mapState.value.nations || []
+  }
 
   show() {
     this.isOpen = true
+    this.context.isNationsVisible.value = true
     this.emitAction('panel-show', { panel: 'nations' })
   }
+  
   hide() {
     this.isOpen = false
+    this.context.isNationsVisible.value = false
     this.emitAction('panel-hide', { panel: 'nations' })
   }
 
   render() {
-    if (!this.isOpen) return html``
+    if (!this.isOpen || !this.context.isNationsVisible.value) return html``
 
     return html`
       <bezel-panel class="w-65 max-h-[calc(100vh-8rem)]">
@@ -97,7 +104,7 @@ export class NationsPanel extends TailwindElement {
     this.context.editingNation.value = nation
     this.context.isEditingNation.value = true
     this.context.pendingNationCoords.value = null
-    this.editor.nationModal?.show()
+    this.context.isNationVisible.value = true
   }
 
   private deleteNation(nation: Nation): void {
@@ -110,7 +117,6 @@ export class NationsPanel extends TailwindElement {
         ...currentMapState,
         nations: newNations,
       }
-      this.nations = newNations
     }
   }
 }

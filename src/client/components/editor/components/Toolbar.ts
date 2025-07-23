@@ -1,8 +1,8 @@
 import './TerrainColorPanel'
-import { LitElement, html } from 'lit'
+import { LitElement, html, nothing } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { TailwindElement } from './TailwindElement'
-import { renderModeIcon, renderMode } from '../types'
+import { renderModeIcon, renderModeName } from '../types'
 import { EditorStoreKey } from '../editor-store'
 
 const SCREENSHOT_SUCCESS_MESSAGE = 'Screenshot copied to clipboard! 📋'
@@ -10,6 +10,7 @@ const SCREENSHOT_SUCCESS_TIMEOUT = 2000
 
 @customElement('map-editor-toolbar')
 export class MapEditorToolbar extends TailwindElement {
+  protected props = ['transform', 'renderMode', 'isDarkMode', 'isTerrainVisible', 'isNationsVisible', 'isHeightmapVisible', 'mapState']
   private _lastZoom = 0
   private _lastRenderMode = 0
 
@@ -26,11 +27,11 @@ export class MapEditorToolbar extends TailwindElement {
   }
 
   private _handleNewMap() {
-    this.editor.newMapModal?.show()
+    this.context.isNewMapVisible.value = true
   }
 
   private _handleLoadMap() {
-    this.editor.loadMapModal?.show()
+    this.context.isLoadMapVisible.value = true
   }
 
   private _handleLoadHeightmap = (event: Event) => {
@@ -85,7 +86,7 @@ export class MapEditorToolbar extends TailwindElement {
   }
 
   private _handleSaveMap() {
-    this.editor.saveMapModal?.show()
+    this.context.isSaveMapVisible.value = true
   }
 
   private _handleClose() {
@@ -94,42 +95,6 @@ export class MapEditorToolbar extends TailwindElement {
 
   private _handleFitToScreen() {
     this.editor.centerAndFit()
-  }
-
-  private _handleToggleRenderMode() {
-    const newMode = (this.context.renderMode.value + 1) % 5
-    if (this.editor) this.editor.switchMode(newMode)
-  }
-
-  private _handleToggleTheme() {
-    this.editor.toggleTheme()
-  }
-
-  private _handleToggleTerrain = () => {
-    this.context.isTerrainVisible.value = !this.context.isTerrainVisible.value
-    if (this.context.isTerrainVisible.value) {
-      this.editor.terrainPanel?.show()
-    } else {
-      this.editor.terrainPanel?.hide()
-    }
-  }
-
-  private _handleToggleNations = () => {
-    this.context.isNationsVisible.value = !this.context.isNationsVisible.value
-    if (this.context.isNationsVisible.value) {
-      this.editor.nationsPanel?.show()
-    } else {
-      this.editor.nationsPanel?.hide()
-    }
-  }
-
-  private _handleToggleHeightmap = () => {
-    this.context.isHeightmapVisible.value = !this.context.isHeightmapVisible.value
-    if (this.context.isHeightmapVisible.value) {
-      this.editor.heightmapToolbar?.show()
-    } else {
-      this.editor.heightmapToolbar?.hide()
-    }
   }
 
   private async _handleScreenshot(event: MouseEvent) {
@@ -210,18 +175,18 @@ export class MapEditorToolbar extends TailwindElement {
         <div class="flex flex-row items-center gap-1">
           <e-button icon="📄" @click=${this._handleNewMap} title="New Map"></e-button>
           <e-button icon="📂" @click=${this._handleLoadMap} title="Load Map"></e-button>
-          <e-button icon="🗺️" ?active=${this.context.isHeightmapVisible.value} @click=${() =>
+          <e-button icon="🗺️" @click=${() =>
             this.querySelector('input')?.click()} title="Load Heightmap">
             <input type="file" accept="image/*" @change=${this._handleLoadHeightmap} class="absolute left-[-9999px] top-[-9999px] invisible">
           </e-button>
-          <e-button icon="💾" ?active=${this.context.isSaveMapVisible.value} @click=${this._handleSaveMap} title="Save Map"></e-button>
+          <e-button icon="💾" ?active=${this.context.mapState.value.gameMap !== null} @click=${this._handleSaveMap} title="Save Map"></e-button>
           <e-button icon="📸" @click=${this._handleScreenshot} title="Screenshot (Alt+click to download PNG)"></e-button>
         </div>
         <div class="h-6 w-px bg-editor-border mx-1"></div>
         <div class="flex flex-row items-center gap-1">
-          <e-button icon="🎨" ?active=${this.context.isTerrainVisible.value} @click=${this._handleToggleTerrain} title=${this.context.isTerrainVisible.value ? 'Hide Terrain Panel' : 'Show Terrain Panel'}></e-button>
-          <e-button icon="🏛️" ?active=${this.context.isNationsVisible.value} @click=${this._handleToggleNations} title=${this.context.isNationsVisible.value ? 'Hide Nations Panel' : 'Show Nations Panel'}></e-button>
-          <e-button icon="🗻" ?active=${this.context.isHeightmapVisible.value} @click=${this._handleToggleHeightmap} title=${this.context.isHeightmapVisible.value ? 'Hide Heightmap Toolbar' : 'Show Heightmap Toolbar'}></e-button>
+          <map-editor-toggle-button key="isTerrainVisible" .icons=${['🎨', '🎨']} .titles=${['Hide Terrain Panel', 'Show Terrain Panel']}></map-editor-toggle-button>
+          <map-editor-toggle-button key="isNationsVisible" .icons=${['🏛️', '🏛️']} .titles=${['Hide Nations Panel', 'Show Nations Panel']}></map-editor-toggle-button>
+          <map-editor-toggle-button key="isHeightmapVisible" .icons=${['🗻', '🗻']} .titles=${['Hide Heightmap Toolbar', 'Show Heightmap Toolbar']}></map-editor-toggle-button>
         </div>
         <div class="h-6 w-px bg-editor-border mx-1"></div>
         <div class="flex items-center gap-1">
@@ -232,22 +197,14 @@ export class MapEditorToolbar extends TailwindElement {
         </div>
         <div class="flex-1"></div>
         <div class="flex items-center gap-1">
-          <e-button .icon=${renderModeIcon[this.context.renderMode.value]} ?active=${
-            this.context.renderMode.value === 1
-          } @click=${this._handleToggleRenderMode} title="${`Switch to ${
-            renderMode[(this.context.renderMode.value + 1) % 5]
-          } Mode`}"></e-button>
+          <map-editor-toggle-button key="renderMode" .icons=${renderModeIcon} .titles=${renderModeName} on-update=${this.engine?.setRenderMode}></map-editor-toggle-button>
           <span class="min-w-[32px] text-center font-semibold text-editor-primary bg-editor-secondary-background px-2 py-1 rounded border border-editor-border text-xs">${
-            renderMode[this.context.renderMode.value]
+            renderModeName[this.context.renderMode.value]
           } [${this.context.renderMode.value}]</span>
         </div>
         <div class="h-6 w-px bg-editor-border mx-1"></div>
         <div class="flex items-center gap-1">
-          <e-button .icon=${
-            this.context.isDarkMode.value ? '☀️' : '🌙'
-          } ?active=${this.context.isDarkMode.value} @click=${this._handleToggleTheme} title="${
-            this.context.isDarkMode.value ? 'Switch to Light Theme' : 'Switch to Dark Theme'
-          }"></e-button>
+          <map-editor-toggle-button key="isDarkMode" .icons=${['🌙', '☀️']} .titles=${['Light', 'Dark']} on-update=${this.editor?.toggleTheme}></map-editor-toggle-button>
           <span class="min-w-[32px] text-center font-semibold text-editor-primary bg-editor-secondary-background px-2 py-1 rounded border border-editor-border text-xs">${
             this.context.isDarkMode.value ? 'Dark' : 'Light'
           }</span>
@@ -258,6 +215,42 @@ export class MapEditorToolbar extends TailwindElement {
           <e-button icon="❌" @click=${this._handleClose} title="Close Editor"></e-button>
         </div>
       </div>
+    `
+  }
+}
+
+@customElement('map-editor-toggle-button')
+export class MapEditorToggleButton extends TailwindElement {
+  @property({ type: Array }) icons: string[] = ['', '']
+  @property({ type: Array }) titles: string[] = ['Off', 'On']
+  @property({ type: Array }) values: number[] = [0, 1]
+  @property({ type: String }) key!: string
+  @property({ type: Function }) onUpdate!: (value: number) => void
+
+  connectedCallback() {
+    super.connectedCallback()
+    this.props = [this.key]
+  }
+
+  private _click_ = (event: MouseEvent) => {
+    debugger
+
+    const value = this.context?.[this.key]?.value || 0
+    const nextValue = this.values[(value + 1) % this.values.length]
+      this.context[this.key].value = nextValue
+      this.onUpdate?.(nextValue)
+
+    event.stopPropagation()
+    event.preventDefault()
+  }
+
+  render() {
+    if (!this.context || !this.icons || !this.titles || !this.values) return nothing
+    const value = this.context?.[this.key]?.value || 0
+    const icon = this.icons[value] || this.icons[0]
+    const title = this.titles[value] || this.titles[0]
+    const active = value !== 0
+    return html`<e-button .icon=${icon} ?active=${active} @click=${this._click_} title=${title}></e-button>
     `
   }
 }

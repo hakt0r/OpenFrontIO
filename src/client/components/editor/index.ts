@@ -3,7 +3,7 @@ import './components/Canvas'
 import './components/Heightmap'
 import './components/LoadMap'
 import './components/NationModal'
-import './components/NationPanel'
+import './components/NationsPanel'
 import './components/NewMap'
 import './components/Overlay'
 import './components/SaveMap'
@@ -26,8 +26,8 @@ import type { EditorEngine } from './engine'
 import type { HeightmapToolbarElement } from './components/Heightmap'
 import type { LoadMapModalElement } from './components/LoadMap'
 import type { MapEditorState, EditorTransform, Nation } from './types'
-import type { NationModalElement } from './components/NationModal'
-import type { NationsPanel } from './components/NationPanel'
+import type { NationModal } from './components/NationModal'
+import type { NationsPanel } from './components/NationsPanel'
 import type { NewMapModalElement } from './components/NewMap'
 import type { SaveMapModalElement } from './components/SaveMap'
 import type { TerrainPanel } from './components/TerrainPanel'
@@ -48,7 +48,7 @@ export class MapEditor extends TailwindElement {
   @query('new-map-modal') newMapModal!: NewMapModalElement
   @query('load-map-modal') loadMapModal!: LoadMapModalElement
   @query('save-map-modal') saveMapModal!: SaveMapModalElement
-  @query('nation-modal') nationModal!: NationModalElement
+  @query('nation-modal') nationModal!: NationModal
   @query('heightmap-toolbar') heightmapToolbar!: HeightmapToolbarElement
   @query('terrain-panel') terrainPanel!: TerrainPanel
   @query('nations-panel') nationsPanel!: NationsPanel
@@ -136,8 +136,7 @@ export class MapEditor extends TailwindElement {
     else this.nationsPanel?.hide()
     if (this.context.isHeightmapVisible.value) this.heightmapToolbar?.show()
     else this.heightmapToolbar?.hide()
-    if (this.context.isSaveMapVisible.value) this.saveMapModal?.show()
-    else this.saveMapModal?.hide()
+    // Modal visibility is now handled by context subscription
     this.updateTheme()
     this.setupResizeObserver()
   }
@@ -205,7 +204,7 @@ export class MapEditor extends TailwindElement {
     canvas.addEventListener('dblclick', this.onDoubleClick)
     canvas.addEventListener('contextmenu', this.onContextMenu)
     
-    console.log('Canvas event listeners set up successfully')
+    console.log('Canvas event listeners set up successfully', canvas)
   }
 
   private onMouseDown = (e: MouseEvent): void => {
@@ -222,7 +221,10 @@ export class MapEditor extends TailwindElement {
 
   private onMouseMove = (e: MouseEvent): void => {
     const canvas = this.canvas
-    if (!canvas) return
+    if (!canvas) {
+      console.log('onMouseMove: canvas not available')
+      return
+    }
     
     const rect = canvas.getBoundingClientRect()
     const canvasX = e.clientX - rect.left
@@ -281,7 +283,7 @@ export class MapEditor extends TailwindElement {
         this.context.editingNation.value = hitNation as Nation
         this.context.isEditingNation.value = true
         this.context.pendingNationCoords.value = null
-        this.nationModal?.show()
+        this.context.isNationVisible.value = true
         e.preventDefault()
       }
     }
@@ -290,6 +292,27 @@ export class MapEditor extends TailwindElement {
   private onWheel = (e: WheelEvent): void => {
     if (e.ctrlKey || e.metaKey) {
       this.zoom(e)
+      e.preventDefault()
+    } else if (e.shiftKey) {
+      // Brush size adjustment with Shift + wheel
+      const delta = e.deltaY > 0 ? -1 : 1
+      const newSize = Math.max(1, Math.min(50, this.context.brushSize.value + delta))
+      this.context.brushSize.value = newSize
+      e.preventDefault()
+    } else {
+      // Tool/brush switching with plain wheel
+      const delta = e.deltaY > 0 ? 1 : -1
+      if (this.context.currentTool.value === 'paint') {
+        const brushes = ['ocean', 'plains', 'highland', 'mountain', 'gaussianblur', 'raiseterrain', 'lowerterrain']
+        const currentIndex = brushes.indexOf(this.context.currentBrush.value)
+        const newIndex = (currentIndex + delta + brushes.length) % brushes.length
+        this.context.currentBrush.value = brushes[newIndex] as any
+      } else {
+        const tools = ['paint', 'erase', 'nation']
+        const currentIndex = tools.indexOf(this.context.currentTool.value)
+        const newIndex = (currentIndex + delta + tools.length) % tools.length
+        this.context.currentTool.value = tools[newIndex] as any
+      }
       e.preventDefault()
     }
   }
@@ -309,7 +332,7 @@ export class MapEditor extends TailwindElement {
         this.context.editingNation.value = hitNation as Nation
         this.context.isEditingNation.value = true
         this.context.pendingNationCoords.value = null
-        this.nationModal?.show()
+        this.context.isNationVisible.value = true
         e.preventDefault()
       }
     }
@@ -355,7 +378,7 @@ export class MapEditor extends TailwindElement {
       this.context.pendingNationCoords.value = [x, y]
       this.context.isEditingNation.value = false
       this.context.editingNation.value = null
-      this.nationModal?.show()
+      this.context.isNationVisible.value = true
       return
     }
     if (!this.renderer) return
@@ -413,16 +436,16 @@ export class MapEditor extends TailwindElement {
                   .dataSourceInfo=${this.dataSourceInfo}
                   .heightmapImage=${this.currentHeightmapImage}
                 ></canvas-overlay>
-                <nations-panel .nations=${this.context.mapState.value.nations} class="pointer-events-auto"></nations-panel>
+                <nations-panel class="pointer-events-auto"></nations-panel>
               </div>
             </div>
           <heightmap-toolbar></heightmap-toolbar>
         </div>
       </div>
-      <new-map-modal></new-map-modal>
-      <load-map-modal></load-map-modal>
-      <save-map-modal></save-map-modal>
-      <nation-modal></nation-modal>
+              <new-map-modal name="NewMap"></new-map-modal>
+        <load-map-modal name="LoadMap"></load-map-modal>
+        <save-map-modal name="SaveMap"></save-map-modal>
+        <nation-modal name="Nation"></nation-modal>
     `
   }
 
@@ -540,7 +563,20 @@ export class MapEditor extends TailwindElement {
   }
 
   private handleComponentChange = (event: CustomEvent) => {
-    const { value, field } = event.detail
-    console.log(`Component change: ${field}`, value)
+    const { value, controlId } = event.detail
+    console.log(`Component change: ${controlId}`, value)
+    
+    // Update the context based on the control that changed
+    if (controlId === 'brushSize') {
+      this.context.brushSize.value = Number(value)
+    } else if (controlId === 'brushMagnitude') {
+      this.context.brushMagnitude.value = Number(value)
+    } else if (controlId === 'heightmapClampMin') {
+      this.context.heightmapClampMin.value = Number(value)
+    } else if (controlId === 'heightmapClampMax') {
+      this.context.heightmapClampMax.value = Number(value)
+    } else if (controlId === 'heightmapMaxSize') {
+      this.context.heightmapMaxSize.value = Number(value)
+    }
   }
 }

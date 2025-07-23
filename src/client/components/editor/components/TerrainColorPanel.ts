@@ -6,6 +6,7 @@ import type { TerrainColors } from '../engine/types'
 
 @customElement('terrain-color-panel')
 export class TerrainColorPanel extends TailwindElement {
+  protected props = ['isDarkMode'] // Only needs to track theme changes
   @state() isOpen = false
   @state() customColors: TerrainColors = {
     oceanColor1: { r: 0.1, g: 0.3, b: 0.6 },
@@ -83,7 +84,7 @@ export class TerrainColorPanel extends TailwindElement {
         <div>
           <section-header title="🌊 Ocean"></section-header>
           <div class="flex items-center gap-2 mb-1">
-            <span class="flex-1 text-xs text-editor-inputText">Deep</span>
+            <span class="flex-1 text-xs text-editor-inputText text-left">Deep</span>
             <input
               type="color"
               class="w-[30px] h-5 rounded cursor-pointer border-none"
@@ -92,7 +93,7 @@ export class TerrainColorPanel extends TailwindElement {
             />
           </div>
           <div class="flex items-center gap-2 mb-1">
-            <span class="flex-1 text-xs text-editor-inputText">Shallow</span>
+            <span class="flex-1 text-xs text-editor-inputText text-left">Shallow</span>
             <input
               type="color"
               class="w-[30px] h-5 rounded cursor-pointer border-none"
@@ -104,7 +105,7 @@ export class TerrainColorPanel extends TailwindElement {
         <div>
           <section-header title="🌾 Plains"></section-header>
           <div class="flex items-center gap-2 mb-1">
-            <span class="flex-1 text-xs text-editor-inputText">Base</span>
+            <span class="flex-1 text-xs text-editor-inputText text-left">Base</span>
             <input
               type="color"
               class="w-[30px] h-5 rounded cursor-pointer border-none"
@@ -113,7 +114,7 @@ export class TerrainColorPanel extends TailwindElement {
             />
           </div>
           <div class="flex items-center gap-2 mb-1">
-            <span class="flex-1 text-xs text-editor-inputText">Highlight</span>
+            <span class="flex-1 text-xs text-editor-inputText text-left">Highlight</span>
             <input
               type="color"
               class="w-[30px] h-5 rounded cursor-pointer border-none"
@@ -125,7 +126,7 @@ export class TerrainColorPanel extends TailwindElement {
         <div>
           <section-header title="🏕️ Highlands"></section-header>
           <div class="flex items-center gap-2 mb-1">
-            <span class="flex-1 text-xs text-editor-inputText">Base</span>
+            <span class="flex-1 text-xs text-editor-inputText text-left">Base</span>
             <input
               type="color"
               class="w-[30px] h-5 rounded cursor-pointer border-none"
@@ -134,7 +135,7 @@ export class TerrainColorPanel extends TailwindElement {
             />
           </div>
           <div class="flex items-center gap-2 mb-1">
-            <span class="flex-1 text-xs text-editor-inputText">Highlight</span>
+            <span class="flex-1 text-xs text-editor-inputText text-left">Highlight</span>
             <input
               type="color"
               class="w-[30px] h-5 rounded cursor-pointer border-none"
@@ -146,7 +147,7 @@ export class TerrainColorPanel extends TailwindElement {
         <div>
           <section-header title="🏔️ Mountain"></section-header>
           <div class="flex items-center gap-2 mb-1">
-            <span class="flex-1 text-xs text-editor-inputText">Base</span>
+            <span class="flex-1 text-xs text-editor-inputText text-left">Base</span>
             <input
               type="color"
               class="w-[30px] h-5 rounded cursor-pointer border-none"
@@ -155,7 +156,7 @@ export class TerrainColorPanel extends TailwindElement {
             />
           </div>
           <div class="flex items-center gap-2 mb-1">
-            <span class="flex-1 text-xs text-editor-inputText">Highlight</span>
+            <span class="flex-1 text-xs text-editor-inputText text-left">Highlight</span>
             <input
               type="color"
               class="w-[30px] h-5 rounded cursor-pointer border-none"
@@ -167,7 +168,7 @@ export class TerrainColorPanel extends TailwindElement {
         <div>
           <section-header title="🏖️ Shore"></section-header>
           <div class="flex items-center gap-2 mb-1">
-            <span class="flex-1 text-xs text-editor-inputText">Shore</span>
+            <span class="flex-1 text-xs text-editor-inputText text-left">Shore</span>
             <input
               type="color"
               class="w-[30px] h-5 rounded cursor-pointer border-none"

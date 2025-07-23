@@ -8,6 +8,7 @@ import { MapManifest } from '../../../../core/game/TerrainMapLoader'
 
 @customElement('load-map-modal')
 export class LoadMapModalElement extends Modal {
+  protected props = ['isLoadMapVisible']
   @state() private selectedMap: string | null = null
   @state() private serverMaps = Object.keys(MAP_NAME_MAPPING) as unknown as (keyof typeof MAP_NAME_MAPPING)[]
   @state() private localMaps: string[] = []
@@ -73,7 +74,7 @@ export class LoadMapModalElement extends Modal {
         .styles=${this.styles}
       >
       <span slot="title">📂 Load Map</span>
-      <div slot="actions">
+      <div slot="actions" class="flex gap-3 justify-end">
         <load-cancel-button .handleCancel=${this.hide}></load-cancel-button> 
         <load-map-button .handleLoad=${this.handleLoad} .disabled=${!this.selectedMap}></load-map-button>
       </div>
@@ -144,8 +145,19 @@ export class LoadMapItem extends TailwindElement {
   @state() private image: string = ''
 
   async willUpdate(changedProperties: PropertyValues) {
-    if (!this.isLocal) this.manifest = await getServerMapMetadata(this.mapName)
-    if (!this.isLocal) this.image = await getServerMapImage(this.mapName)
+    if (!this.isLocal) {
+      this.manifest = await getServerMapMetadata(this.mapName)
+      this.image = await getServerMapImage(this.mapName)
+    } else {
+      // For local maps, create a basic manifest
+      this.manifest = {
+        name: this.mapName,
+        description: 'Local map',
+        width: 0,
+        height: 0,
+        nations: []
+      } as any
+    }
   }
 
   readableName(s: string) {
@@ -169,7 +181,7 @@ export class LoadMapItem extends TailwindElement {
         <div class="font-medium text-editor-text w-full text-left z-10 text-white" style="text-shadow: 0 0 6px black;">
           ${this.readableName(this.isLocal ? this.mapName : this.manifest.name)}
         </div>
-        <only-show .if=${!this.isLocal && !this.isDeleting}>
+        <only-show .if=${this.isLocal && !this.isDeleting}>
           <e-button
           classes="absolute top-0 right-0 z-20"
           variant="danger"
@@ -196,6 +208,7 @@ export class LoadMapButton extends TailwindElement {
         variant="primary"
         ?disabled=${this.disabled}
         @click=${this.handleLoad}
+        class="bg-editor-primary text-white border-editor-primary hover:bg-editor-primary-hover"
       >
         Load Map
       </e-button>
@@ -208,7 +221,13 @@ export class LoadCancelButton extends TailwindElement {
   @property({ type: Function }) handleCancel: () => void
   render() {
     return html`
-      <e-button variant="secondary" @click=${this.handleCancel}>Cancel</e-button>
+      <e-button 
+        variant="secondary" 
+        @click=${this.handleCancel}
+        class="bg-editor-secondary-background text-editor-text border-editor-border hover:bg-editor-border"
+      >
+        Cancel
+      </e-button>
     `
   }
 }

@@ -7,6 +7,7 @@ import { TailwindElement } from './TailwindElement'
 
 @customElement('canvas-overlay')
 export class CanvasOverlay extends TailwindElement {
+  protected props = ['mapState', 'transform', 'hoverCoords', 'hoverTerrainInfo']
   @property({ type: Object }) heightmapImage?: HTMLImageElement
   @property({ type: Object }) hoverCoords?: { x: number; y: number }
   @property({ type: Object }) hoverTerrainInfo?: TerrainInfo

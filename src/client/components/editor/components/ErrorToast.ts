@@ -4,6 +4,7 @@ import { TailwindElement } from './TailwindElement'
 
 @customElement('error-toast')
 export class ErrorToast extends TailwindElement {
+  protected props = ['errorMessage']
   @property({ type: String }) message = ''
   @property({ type: Boolean }) visible = false
 

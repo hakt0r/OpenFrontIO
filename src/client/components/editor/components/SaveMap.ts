@@ -7,6 +7,7 @@ import { handleSaveMapSubmit } from '../engine/actions'
 
 @customElement('save-map-modal')
 export class SaveMapModalElement extends Modal {
+  protected props = ['isSaveMapVisible', 'mapState']
   @state() private mapName = ''
   @state() private saveType: 'local' | 'export' = 'local'
 

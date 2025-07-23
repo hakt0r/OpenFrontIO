@@ -24,7 +24,8 @@ const readTailwindSource = () => {
 }
 
 export class TailwindElement extends LitElement {
-  @consume({ context: editorContext, subscribe: true }) @property({ attribute: false }) public context!: EditorStore
+  @consume({ context: editorContext, subscribe: true })
+  @property({ attribute: false }) public context!: EditorStore
   @property({ type: Object }) styles = styles
 
   private styleTag: HTMLLinkElement = null as unknown as HTMLLinkElement
@@ -38,7 +39,6 @@ export class TailwindElement extends LitElement {
     return this.context.engine.value
   }
 
-  // Event dispatching helpers
   protected emit<T = any>(eventName: string, detail?: T, options?: CustomEventInit) {
     const event = new CustomEvent(eventName, {
       detail,
@@ -67,7 +67,9 @@ export class TailwindElement extends LitElement {
   }
 
   shouldUpdate(changedProperties: Map<string | number | symbol, unknown>) {
+    console.log('shouldUpdate', changedProperties)
     if (!this.props) return super.shouldUpdate(changedProperties)
+    
     return super.shouldUpdate(changedProperties)
   }
 
