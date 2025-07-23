@@ -1,5 +1,4 @@
 import './components/Button'
-import './components/Canvas'
 import './components/Heightmap'
 import './components/LoadMap'
 import './components/NationModal'
@@ -24,7 +23,6 @@ import { EditorEngine } from './engine'
 import { extractTerrainColorsFromTheme } from './engine/theme'
 import { DEBUG_RENDER_MODE } from './engine/debug'
 
-import type { Canvas } from './components/Canvas'
 import type { EditorEngine } from './engine'
 import type { HeightmapToolbarElement } from './components/Heightmap'
 import type { LoadMapModalElement } from './components/LoadMap'
@@ -49,7 +47,7 @@ export class MapEditor extends TailwindElement {
   @provide({ context: editorContext })
   context: EditorStore = editorStore
 
-  @query('webgl-canvas') webglCanvas!: Canvas
+  @query('#map-canvas') canvas!: HTMLCanvasElement
   @query('new-map-modal') newMapModal!: NewMapModalElement
   @query('load-map-modal') loadMapModal!: LoadMapModalElement
   @query('save-map-modal') saveMapModal!: SaveMapModalElement
@@ -122,12 +120,11 @@ export class MapEditor extends TailwindElement {
 
   async firstUpdated(): Promise<void> {
     await this.updateComplete
-    await this.webglCanvas?.updateComplete
     
-    // Editor initializes the engine, not Canvas
+    // Editor initializes the engine directly
     await this.initializeEngine()
-    
-    await this.connectInputToCanvas()
+    this.setupCanvasEventListeners()
+    this.setupMouseLeaveHandler()
     
     if (this.context.isTerrainVisible.value) this.terrainPanel?.show()
     else this.terrainPanel?.hide()
@@ -141,12 +138,11 @@ export class MapEditor extends TailwindElement {
   }
 
   private async initializeEngine(): Promise<void> {
-    const canvas = this.webglCanvas?.canvas
-    if (!canvas) return
+    if (!this.canvas) return
     
     const terrainColors = extractTerrainColorsFromTheme(this.theme)
     const options = { preserveDrawingBuffer: true, terrainColors }
-    this.context.engine.value = new EditorEngine(canvas, options)
+    this.context.engine.value = new EditorEngine(this.canvas, options)
     await this.context.engine.value.initialize()
     this.renderer = this.context.engine.value
     
@@ -174,24 +170,20 @@ export class MapEditor extends TailwindElement {
   }
 
   public resizeCanvas(): void {
-    const canvas = this.webglCanvas?.canvas
-    if (!canvas || !this.renderer) return
+    if (!this.canvas || !this.renderer) return
 
-    const container = canvas.parentElement
+    const container = this.canvas.parentElement
     if (!container) return
 
     const containerRect = container.getBoundingClientRect()
     const pixelRatio = window.devicePixelRatio || 1
-    canvas.width = containerRect.width * pixelRatio
-    canvas.height = containerRect.height * pixelRatio
+    this.canvas.width = containerRect.width * pixelRatio
+    this.canvas.height = containerRect.height * pixelRatio
     this.renderer.resize()
   }
 
   public centerAndFit(): void {
-    if (!this.renderer) return
-
-    const canvas = this.webglCanvas?.canvas
-    if (!canvas) return
+    if (!this.renderer || !this.canvas) return
 
     const mapDimensions = this.renderer.chunkManager.mapDimensions
 
@@ -199,7 +191,7 @@ export class MapEditor extends TailwindElement {
       return
     }
 
-    const canvasRect = canvas.getBoundingClientRect()
+    const canvasRect = this.canvas.getBoundingClientRect()
     const canvasWidth = canvasRect.width
     const canvasHeight = canvasRect.height
 
@@ -236,7 +228,7 @@ export class MapEditor extends TailwindElement {
 
     if (changedProperties.has('isOpen') && this.context.isOpen.value) {
       await this.updateComplete
-      await this.connectInputToCanvas()
+      this.setupCanvasEventListeners()
       // Ensure renderer is set after canvas updates
       this.renderer = this.context.engine.value
     }
@@ -259,12 +251,7 @@ export class MapEditor extends TailwindElement {
     if (canvas) canvas.style.cursor = BrushCursor[this.context.currentTool.value]
   }
 
-  private async connectInputToCanvas(): Promise<void> {
-    if (!this.webglCanvas) return
-
-    await this.webglCanvas.updateComplete
-    this.setupEventListeners()
-  }
+  // Removed connectInputToCanvas - events are set up directly now
 
   private updateTheme(): void {
     const theme = this.theme
@@ -274,46 +261,52 @@ export class MapEditor extends TailwindElement {
     }
   }
 
-  private setupEventListeners(): void {
-    const canvas = this.webglCanvas?.webglCanvas
-    if (!canvas) return
+  private setupCanvasEventListeners(): void {
+    if (!this.canvas) return
 
     // Remove existing listeners first
-    canvas.removeEventListener('mousedown', this.onMouseDown)
-    canvas.removeEventListener('mousemove', this.onMouseMove)
-    canvas.removeEventListener('mouseup', this.onMouseUp)
-    canvas.removeEventListener('wheel', this.onWheel)
-    canvas.removeEventListener('dblclick', this.onDoubleClick)
-    canvas.removeEventListener('contextmenu', this.onContextMenu)
+    this.canvas.removeEventListener('mousedown', this.onMouseDown)
+    this.canvas.removeEventListener('mousemove', this.onMouseMove)
+    this.canvas.removeEventListener('mouseup', this.onMouseUp)
+    this.canvas.removeEventListener('wheel', this.onWheel)
+    this.canvas.removeEventListener('dblclick', this.onDoubleClick)
+    this.canvas.removeEventListener('contextmenu', this.onContextMenu)
 
     // Add event listeners
-    canvas.addEventListener('mousedown', this.onMouseDown)
-    canvas.addEventListener('mousemove', this.onMouseMove)
-    canvas.addEventListener('mouseup', this.onMouseUp)
-    canvas.addEventListener('wheel', this.onWheel, { passive: false })
-    canvas.addEventListener('dblclick', this.onDoubleClick)
-    canvas.addEventListener('contextmenu', this.onContextMenu)
-    
+    this.canvas.addEventListener('mousedown', this.onMouseDown)
+    this.canvas.addEventListener('mousemove', this.onMouseMove)
+    this.canvas.addEventListener('mouseup', this.onMouseUp)
+    this.canvas.addEventListener('wheel', this.onWheel, { passive: false })
+    this.canvas.addEventListener('dblclick', this.onDoubleClick)
+    this.canvas.addEventListener('contextmenu', this.onContextMenu)
+  }
 
+  private setupMouseLeaveHandler(): void {
+    if (!this.canvas) return
+    this.canvas.addEventListener('mouseleave', this.onMouseLeave)
+  }
+
+  private onMouseLeave = (): void => {
+    this.setBrushCenter(-1000, -1000)
+    this.context.hoverCoords.value = null
+    this.context.hoverTerrainInfo.value = null
   }
 
   private onMouseDown = (e: MouseEvent): void => {
-    const canvas = this.canvas
-    if (!canvas) return
+    if (!this.canvas) return
     
     handleMouseDown(
       e,
-      canvas,
+      this.canvas,
       (x, y) => this.onLeftClick(x, y),
       (x, y) => this.onRightDrag(x, y),
     )
   }
 
   private onMouseMove = (e: MouseEvent): void => {
-    const canvas = this.canvas
-    if (!canvas) return
+    if (!this.canvas) return
     
-    const rect = canvas.getBoundingClientRect()
+    const rect = this.canvas.getBoundingClientRect()
     const canvasX = e.clientX - rect.left
     const canvasY = e.clientY - rect.top
 
@@ -351,8 +344,7 @@ export class MapEditor extends TailwindElement {
   private onMouseUp = (): void => {
     this.context.isDrawing.value = false
     this.context.isDragging.value = false
-    const canvas = this.canvas
-    if (canvas) canvas.style.cursor = BrushCursor[this.context.currentTool.value]
+    if (this.canvas) this.canvas.style.cursor = BrushCursor[this.context.currentTool.value]
   }
 
   private onDoubleClick = (e: MouseEvent): void => {
@@ -571,7 +563,20 @@ export class MapEditor extends TailwindElement {
         <div class="flex flex-col h-screen w-screen bg-editor-background text-editor-text overflow-hidden flex-1">
           <map-editor-toolbar></map-editor-toolbar>
             <div class="flex-1 relative h-full overflow-hidden">
-              <webgl-canvas class="flex-grow h-full"></webgl-canvas>
+              <div class="flex flex-row h-full relative overflow-hidden">
+                <canvas
+                  id="map-canvas"
+                  class="flex-grow w-full h-full cursor-crosshair"
+                ></canvas>
+                <canvas-overlay 
+                  .mapState=${this.context.mapState.value}
+                  .transform=${this.context.transform.value}
+                  .renderer=${this.renderer ? 'EditorEngine' : 'None'}
+                  .hoverCoords=${this.context.hoverCoords.value}
+                  .hoverTerrainInfo=${this.context.hoverTerrainInfo.value}
+                  .heightmapImage=${this.currentHeightmapImage}
+                ></canvas-overlay>
+              </div>
               <div class="absolute top-0 left-0 h-full p-4 pointer-events-none flex items-start">
                 <terrain-panel class="pointer-events-auto"></terrain-panel>
               </div>
@@ -626,9 +631,7 @@ export class MapEditor extends TailwindElement {
     }
   }
 
-  public get canvas(): HTMLCanvasElement | null {
-    return this.webglCanvas?.webglCanvas || null
-  }
+  // Canvas is directly queried now
 
   public async open(): Promise<void> {
     this.context.isOpen.value = true
