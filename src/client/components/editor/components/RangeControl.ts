@@ -15,38 +15,48 @@ export class SidebarRangeControl extends TailwindElement {
     super()
   }
 
+  private updateBrushSize = (value: number) => {
+    this.context.brushSize.value = value
+    this.context.engine.value?.setBrushRadius(value)
+  }
+
+  private updateBrushMagnitude = (value: number) => {
+    this.context.brushMagnitude.value = value
+    this.context.engine.value?.setBrushMagnitude(value)
+  }
+
+  private updateHeightmapMaxSize = (value: number) => {
+    this.context.heightmapMaxSize.value = value
+    this.editor?.heightmapToolbar?.debouncedUpdateHeightmap?.()
+  }
+
+  private updateHeightmapClampMin = (value: number) => {
+    this.context.heightmapClampMin.value = Math.min(value, this.context.heightmapClampMax.value - 0.01)
+    this.editor?.heightmapToolbar?.debouncedUpdateHeightmap?.()
+  }
+
+  private updateHeightmapClampMax = (value: number) => {
+    this.context.heightmapClampMax.value = Math.max(value, this.context.heightmapClampMin.value + 0.01)
+    this.editor?.heightmapToolbar?.debouncedUpdateHeightmap?.()
+  }
+
+  private updateDefault = (controlId: string, value: number) => {
+    this.context[controlId].value = value
+  }
+
   private _handleControlChange(controlId: string, value: number | string) {
     const numValue = Number(value)
-    const engine = this.context.engine.value
     
-    // Update signal and handle side effects based on control type
-    switch (controlId) {
-      case 'brushSize':
-        this.context.brushSize.value = numValue
-        engine?.setBrushRadius(numValue)
-        break
-      case 'brushMagnitude':
-        this.context.brushMagnitude.value = numValue
-        engine?.setBrushMagnitude(numValue)
-        break
-      case 'heightmapMaxSize':
-        this.context.heightmapMaxSize.value = numValue
-        if (this.editor?.currentHeightmapImage)
-          this.editor.heightmapToolbar?.debouncedUpdateHeightmap()
-        break
-      case 'heightmapClampMin':
-        this.context.heightmapClampMin.value = Math.min(numValue, this.context.heightmapClampMax.value - 0.01)
-        if (this.editor?.currentHeightmapImage)
-          this.editor.heightmapToolbar?.debouncedUpdateHeightmap()
-        break
-      case 'heightmapClampMax':
-        this.context.heightmapClampMax.value = Math.max(numValue, this.context.heightmapClampMin.value + 0.01)
-        if (this.editor?.currentHeightmapImage)
-          this.editor.heightmapToolbar?.debouncedUpdateHeightmap()
-        break
-      default:
-        this.context[controlId].value = numValue
+    // DRY method mapping
+    const updateMethods = {
+      brushSize: this.updateBrushSize,
+      brushMagnitude: this.updateBrushMagnitude,
+      heightmapMaxSize: this.updateHeightmapMaxSize,
+      heightmapClampMin: this.updateHeightmapClampMin,
+      heightmapClampMax: this.updateHeightmapClampMax,
     }
+
+    updateMethods[controlId]?.(numValue) ?? this.updateDefault(controlId, numValue)
   }
 
   render() {
