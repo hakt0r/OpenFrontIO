@@ -205,7 +205,7 @@ export class MapEditor extends TailwindElement {
     canvas.addEventListener('dblclick', this.onDoubleClick)
     canvas.addEventListener('contextmenu', this.onContextMenu)
     
-    console.log('Canvas event listeners set up successfully')
+    console.log('Canvas event listeners set up successfully', canvas)
   }
 
   private onMouseDown = (e: MouseEvent): void => {
@@ -222,7 +222,10 @@ export class MapEditor extends TailwindElement {
 
   private onMouseMove = (e: MouseEvent): void => {
     const canvas = this.canvas
-    if (!canvas) return
+    if (!canvas) {
+      console.log('onMouseMove: canvas not available')
+      return
+    }
     
     const rect = canvas.getBoundingClientRect()
     const canvasX = e.clientX - rect.left
@@ -290,6 +293,27 @@ export class MapEditor extends TailwindElement {
   private onWheel = (e: WheelEvent): void => {
     if (e.ctrlKey || e.metaKey) {
       this.zoom(e)
+      e.preventDefault()
+    } else if (e.shiftKey) {
+      // Brush size adjustment with Shift + wheel
+      const delta = e.deltaY > 0 ? -1 : 1
+      const newSize = Math.max(1, Math.min(50, this.context.brushSize.value + delta))
+      this.context.brushSize.value = newSize
+      e.preventDefault()
+    } else {
+      // Tool/brush switching with plain wheel
+      const delta = e.deltaY > 0 ? 1 : -1
+      if (this.context.currentTool.value === 'paint') {
+        const brushes = ['ocean', 'plains', 'highland', 'mountain', 'gaussianblur', 'raiseterrain', 'lowerterrain']
+        const currentIndex = brushes.indexOf(this.context.currentBrush.value)
+        const newIndex = (currentIndex + delta + brushes.length) % brushes.length
+        this.context.currentBrush.value = brushes[newIndex] as any
+      } else {
+        const tools = ['paint', 'erase', 'nation']
+        const currentIndex = tools.indexOf(this.context.currentTool.value)
+        const newIndex = (currentIndex + delta + tools.length) % tools.length
+        this.context.currentTool.value = tools[newIndex] as any
+      }
       e.preventDefault()
     }
   }
@@ -540,7 +564,20 @@ export class MapEditor extends TailwindElement {
   }
 
   private handleComponentChange = (event: CustomEvent) => {
-    const { value, field } = event.detail
-    console.log(`Component change: ${field}`, value)
+    const { value, controlId } = event.detail
+    console.log(`Component change: ${controlId}`, value)
+    
+    // Update the context based on the control that changed
+    if (controlId === 'brushSize') {
+      this.context.brushSize.value = Number(value)
+    } else if (controlId === 'brushMagnitude') {
+      this.context.brushMagnitude.value = Number(value)
+    } else if (controlId === 'heightmapClampMin') {
+      this.context.heightmapClampMin.value = Number(value)
+    } else if (controlId === 'heightmapClampMax') {
+      this.context.heightmapClampMax.value = Number(value)
+    } else if (controlId === 'heightmapMaxSize') {
+      this.context.heightmapMaxSize.value = Number(value)
+    }
   }
 }

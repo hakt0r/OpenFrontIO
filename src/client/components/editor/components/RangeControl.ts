@@ -5,7 +5,6 @@ import { TailwindElement } from './TailwindElement'
 @customElement('range-control')
 export class SidebarRangeControl extends TailwindElement {
   @property({ type: String }) name!: string
-  @property({ type: Number }) value!: number
   @property({ type: String }) helpText!: string
   @property({ type: Number }) min!: number
   @property({ type: Number }) max!: number
@@ -19,8 +18,25 @@ export class SidebarRangeControl extends TailwindElement {
     this.emitChange({ controlId, value })
   }
 
+  private getCurrentValue(): number {
+    // Get the current value from the context based on the control name
+    if (this.name === 'brushSize') {
+      return this.context.brushSize.value
+    } else if (this.name === 'brushMagnitude') {
+      return this.context.brushMagnitude.value
+    } else if (this.name === 'heightmapClampMin') {
+      return this.context.heightmapClampMin.value
+    } else if (this.name === 'heightmapClampMax') {
+      return this.context.heightmapClampMax.value
+    } else if (this.name === 'heightmapMaxSize') {
+      return this.context.heightmapMaxSize.value
+    }
+    // Fallback for any other controls that might use a default value
+    return 0
+  }
+
   render() {
-    const currentValue = this.value
+    const currentValue = this.getCurrentValue()
     const min = this.min || 0
     const max = this.max || 100
     const step = this.step || 1

@@ -98,6 +98,7 @@ export class MapEditorToolbar extends TailwindElement {
 
   private _handleToggleRenderMode() {
     const newMode = (this.context.renderMode.value + 1) % 5
+    this.context.renderMode.value = newMode
     if (this.editor) this.editor.switchMode(newMode)
   }
 
@@ -210,11 +211,11 @@ export class MapEditorToolbar extends TailwindElement {
         <div class="flex flex-row items-center gap-1">
           <e-button icon="📄" @click=${this._handleNewMap} title="New Map"></e-button>
           <e-button icon="📂" @click=${this._handleLoadMap} title="Load Map"></e-button>
-          <e-button icon="🗺️" ?active=${this.context.isHeightmapVisible.value} @click=${() =>
+          <e-button icon="🗺️" @click=${() =>
             this.querySelector('input')?.click()} title="Load Heightmap">
             <input type="file" accept="image/*" @change=${this._handleLoadHeightmap} class="absolute left-[-9999px] top-[-9999px] invisible">
           </e-button>
-          <e-button icon="💾" ?active=${this.context.isSaveMapVisible.value} @click=${this._handleSaveMap} title="Save Map"></e-button>
+          <e-button icon="💾" ?active=${this.context.mapState.value.gameMap !== null} @click=${this._handleSaveMap} title="Save Map"></e-button>
           <e-button icon="📸" @click=${this._handleScreenshot} title="Screenshot (Alt+click to download PNG)"></e-button>
         </div>
         <div class="h-6 w-px bg-editor-border mx-1"></div>
@@ -233,7 +234,7 @@ export class MapEditorToolbar extends TailwindElement {
         <div class="flex-1"></div>
         <div class="flex items-center gap-1">
           <e-button .icon=${renderModeIcon[this.context.renderMode.value]} ?active=${
-            this.context.renderMode.value === 1
+            this.context.renderMode.value !== 0
           } @click=${this._handleToggleRenderMode} title="${`Switch to ${
             renderMode[(this.context.renderMode.value + 1) % 5]
           } Mode`}"></e-button>
