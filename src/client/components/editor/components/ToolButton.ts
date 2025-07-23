@@ -20,26 +20,23 @@ export const styles = {
 
 @customElement('tool-button')
 export class ToolButton extends EButton {
-  protected props = ['currentTool', 'currentBrush']
+  // Subscribe to only the signals this component actually needs
+  private unsubscribeCallbacks: Array<() => void> = []
 
   @property({ type: String }) type = 'tool'
   @property({ type: String }) value = 'brush'
   @property({ type: Function }) onclick = (event: MouseEvent) => {
-    const actionData = {
-      type: this.type,
-      value: this.value,
-      tool: this.type === 'tool' ? allTools[this.value] : 'paint',
-      brush: this.type === 'brush' ? allBrushes[this.value] : this.context.currentBrush.value,
-    }
+    // Direct signal updates - no event emission needed
+    const newTool = this.type === 'tool' ? allTools[this.value] : 'paint'
+    const newBrush = this.type === 'brush' ? allBrushes[this.value] : this.context.currentBrush.value
     
-    this.emitAction('tool-select', actionData)
+    this.context.currentTool.value = newTool
+    this.context.currentBrush.value = newBrush
     
-    const c = this.context
-    c.currentTool.value = actionData.tool
-    c.currentBrush.value = actionData.brush
+    // Update engine directly through context
     const [engineBrushType, brushMagnitude] = getEngineBrushValues(this.context)
-    c.engine.value?.renderer.setBrushType(engineBrushType)
-    c.engine.value?.renderer.setBrushMagnitude(brushMagnitude)
+    this.context.engine.value?.renderer.setBrushType(engineBrushType)
+    this.context.engine.value?.renderer.setBrushMagnitude(brushMagnitude)
     
     event.stopPropagation()
     event.preventDefault()
@@ -48,6 +45,23 @@ export class ToolButton extends EButton {
   constructor() {
     super()
     this.classes = 'w-full'
+  }
+
+  connectedCallback() {
+    super.connectedCallback()
+    
+    // Subscribe only to the signals this component needs
+    this.unsubscribeCallbacks.push(
+      this.context.currentTool.subscribe(() => this.requestUpdate()),
+      this.context.currentBrush.subscribe(() => this.requestUpdate())
+    )
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback()
+    // Clean up subscriptions
+    this.unsubscribeCallbacks.forEach(unsubscribe => unsubscribe())
+    this.unsubscribeCallbacks = []
   }
 
   willUpdate(changedProperties: Map<string | number | symbol, unknown>) {

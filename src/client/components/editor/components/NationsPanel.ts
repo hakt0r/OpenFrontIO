@@ -7,23 +7,41 @@ import { TailwindElement } from './TailwindElement'
 
 @customElement('nations-panel')
 export class NationsPanel extends TailwindElement {
-  protected props = ['mapState', 'isNationsVisible']
   @state() isOpen = true
+  private unsubscribeCallbacks: Array<() => void> = []
 
   get nations(): Nation[] {
     return this.context.mapState.value.nations || []
   }
 
+  connectedCallback() {
+    super.connectedCallback()
+    
+    // Subscribe to signals this component needs
+    this.unsubscribeCallbacks.push(
+      this.context.mapState.subscribe(() => this.requestUpdate()),
+      this.context.isNationsVisible.subscribe(() => {
+        this.isOpen = this.context.isNationsVisible.value
+        this.requestUpdate()
+      })
+    )
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback()
+    // Clean up subscriptions
+    this.unsubscribeCallbacks.forEach(unsubscribe => unsubscribe())
+    this.unsubscribeCallbacks = []
+  }
+
   show() {
     this.isOpen = true
     this.context.isNationsVisible.value = true
-    this.emitAction('panel-show', { panel: 'nations' })
   }
   
   hide() {
     this.isOpen = false
     this.context.isNationsVisible.value = false
-    this.emitAction('panel-hide', { panel: 'nations' })
   }
 
   render() {

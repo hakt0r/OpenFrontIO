@@ -29,7 +29,6 @@ export class TailwindElement extends LitElement {
   @property({ type: Object }) styles = styles
 
   private styleTag: HTMLLinkElement = null as unknown as HTMLLinkElement
-  protected props: Array<string> = null as unknown as Array<string>
 
   public get editor(): MapEditor {
     return this.context.editor.value
@@ -66,12 +65,7 @@ export class TailwindElement extends LitElement {
     return this.attachShadow({ mode: 'open' })
   }
 
-  shouldUpdate(changedProperties: Map<string | number | symbol, unknown>) {
-    console.log('shouldUpdate', changedProperties)
-    if (!this.props) return super.shouldUpdate(changedProperties)
-    
-    return super.shouldUpdate(changedProperties)
-  }
+  // Removed shouldUpdate - components now manage their own subscriptions
 
   updated(changedProperties: Map<string | number | symbol, unknown>) {
     if (!document.tailwindSource) readTailwindSource()

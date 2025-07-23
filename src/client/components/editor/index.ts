@@ -99,9 +99,8 @@ export class MapEditor extends TailwindElement {
 
   disconnectedCallback(): void {
     super.disconnectedCallback()
-    this.removeEventListener('action', this.handleComponentAction)
+    // Only keep error handling for actual errors
     this.removeEventListener('error', this.handleComponentError)
-    this.removeEventListener('change', this.handleComponentChange)
   }
 
   connectedCallback(): void {
@@ -112,14 +111,16 @@ export class MapEditor extends TailwindElement {
     this.context.transform.value = { zoom: 1, panX: 0, panY: 0 }
     this.context.mapState.value = initializeMap()
 
-    Object.values(this.context).forEach((signal) => {
-      signal.subscribe(() => this.requestUpdate())
+    // Subscribe only to signals that affect the main editor component
+    this.context.isDarkMode.subscribe(() => this.requestUpdate())
+    this.context.currentTool.subscribe(() => this.updateCursor())
+    this.context.brushSize.subscribe(() => this.updateCursor())
+    this.context.currentBrush.subscribe(() => {
+      this.context.currentTool.value = 'paint'
     })
 
-    // Listen for component events
-    this.addEventListener('action', this.handleComponentAction)
+    // Only keep error handling for actual errors
     this.addEventListener('error', this.handleComponentError)
-    this.addEventListener('change', this.handleComponentChange)
   }
 
   async firstUpdated(): Promise<void> {
@@ -151,13 +152,9 @@ export class MapEditor extends TailwindElement {
       this.renderer = this.context.engine.value
     }
 
-    if (changedProperties.has('isDarkMode')) {
+    if (this.context.isDarkMode.value !== this.userSettings.darkMode()) {
       this.setAttribute('theme', this.context.isDarkMode.value ? 'dark' : 'light')
       this.updateTheme()
-    }
-    if (changedProperties.has('currentTool') || changedProperties.has('brushSize')) this.updateCursor()
-    if (changedProperties.has('currentBrush')) {
-      this.context.currentTool.value = 'paint'
     }
   }
 
@@ -538,45 +535,9 @@ export class MapEditor extends TailwindElement {
     this.requestUpdate()
   }
 
-  // Component event handlers
-  private handleComponentAction = (event: CustomEvent) => {
-    const { action, data } = event.detail
-    console.log(`Editor received action: ${action}`, data)
-    
-    switch (action) {
-      case 'tool-select':
-        console.log(`Tool selected: ${data.tool}, Brush: ${data.brush}`)
-        break
-      case 'panel-show':
-      case 'panel-hide':
-        console.log(`Panel ${data.panel} ${action.split('-')[1]}`)
-        break
-      case 'canvas-mouse-leave':
-        console.log('Mouse left canvas')
-        break
-    }
-  }
-
+  // Keep only error handling for actual error messages
   private handleComponentError = (event: CustomEvent) => {
     const { message } = event.detail
     this.setError(message)
-  }
-
-  private handleComponentChange = (event: CustomEvent) => {
-    const { value, controlId } = event.detail
-    console.log(`Component change: ${controlId}`, value)
-    
-    // Update the context based on the control that changed
-    if (controlId === 'brushSize') {
-      this.context.brushSize.value = Number(value)
-    } else if (controlId === 'brushMagnitude') {
-      this.context.brushMagnitude.value = Number(value)
-    } else if (controlId === 'heightmapClampMin') {
-      this.context.heightmapClampMin.value = Number(value)
-    } else if (controlId === 'heightmapClampMax') {
-      this.context.heightmapClampMax.value = Number(value)
-    } else if (controlId === 'heightmapMaxSize') {
-      this.context.heightmapMaxSize.value = Number(value)
-    }
   }
 }

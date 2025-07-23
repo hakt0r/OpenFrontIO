@@ -10,18 +10,34 @@ import { EditorTool, getEngineBrushValues, type SidebarConfig } from '../types'
 
 @customElement('terrain-panel')
 export class TerrainPanel extends TailwindElement {
-  protected props = ['isTerrainVisible', 'currentTool', 'currentBrush', 'brushSize', 'brushMagnitude', 'heightmapMaxSize', 'heightmapClampMin', 'heightmapClampMax']
+  private unsubscribeCallbacks: Array<() => void> = []
 
   connectedCallback() {
     super.connectedCallback()
     document.addEventListener('wheel', this.onWheel, { passive: false })
     document.addEventListener('keydown', this.onKey)
+    
+    // Subscribe to signals this component needs
+    this.unsubscribeCallbacks.push(
+      this.context.isTerrainVisible.subscribe(() => this.requestUpdate()),
+      this.context.currentTool.subscribe(() => this.requestUpdate()),
+      this.context.currentBrush.subscribe(() => this.requestUpdate()),
+      this.context.brushSize.subscribe(() => this.requestUpdate()),
+      this.context.brushMagnitude.subscribe(() => this.requestUpdate()),
+      this.context.heightmapMaxSize.subscribe(() => this.requestUpdate()),
+      this.context.heightmapClampMin.subscribe(() => this.requestUpdate()),
+      this.context.heightmapClampMax.subscribe(() => this.requestUpdate())
+    )
   }
 
   disconnectedCallback() {
     super.disconnectedCallback()
     document.removeEventListener('wheel', this.onWheel)
     document.removeEventListener('keydown', this.onKey)
+    
+    // Clean up subscriptions
+    this.unsubscribeCallbacks.forEach(unsubscribe => unsubscribe())
+    this.unsubscribeCallbacks = []
   }
 
   private onWheel = (e: WheelEvent): void => {
@@ -131,12 +147,10 @@ export class TerrainPanel extends TailwindElement {
 
   show = () => {
     this.context.isTerrainVisible.value = true
-    this.emitAction('panel-show', { panel: 'terrain' })
   }
 
   hide = () => {
     this.context.isTerrainVisible.value = false
-    this.emitAction('panel-hide', { panel: 'terrain' })
   }
 
   render() {

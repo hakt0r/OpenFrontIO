@@ -10,20 +10,40 @@ const SCREENSHOT_SUCCESS_TIMEOUT = 2000
 
 @customElement('map-editor-toolbar')
 export class MapEditorToolbar extends TailwindElement {
-  protected props = ['transform', 'renderMode', 'isDarkMode', 'isTerrainVisible', 'isNationsVisible', 'isHeightmapVisible', 'mapState']
   private _lastZoom = 0
   private _lastRenderMode = 0
+  private unsubscribeCallbacks: Array<() => void> = []
 
-  willUpdate(changedProperties: Map<string | number | symbol, unknown>) {
-    super.willUpdate(changedProperties)
+  connectedCallback() {
+    super.connectedCallback()
+    
+    // Subscribe to signals this component needs
+    this.unsubscribeCallbacks.push(
+      this.context.transform.subscribe(() => {
+        if (this.context.transform.value.zoom !== this._lastZoom) {
+          this._lastZoom = this.context.transform.value.zoom
+          this.requestUpdate()
+        }
+      }),
+      this.context.renderMode.subscribe(() => {
+        if (this.context.renderMode.value !== this._lastRenderMode) {
+          this._lastRenderMode = this.context.renderMode.value
+          this.requestUpdate()
+        }
+      }),
+      this.context.isDarkMode.subscribe(() => this.requestUpdate()),
+      this.context.isTerrainVisible.subscribe(() => this.requestUpdate()),
+      this.context.isNationsVisible.subscribe(() => this.requestUpdate()),
+      this.context.isHeightmapVisible.subscribe(() => this.requestUpdate()),
+      this.context.mapState.subscribe(() => this.requestUpdate())
+    )
+  }
 
-    if (!this.context) return
-    const zoomChanged = this.context.transform.value.zoom !== this._lastZoom
-    const renderModeChanged = this.context.renderMode.value !== this._lastRenderMode
-
-    if (!zoomChanged && !renderModeChanged) return
-    this._lastZoom = this.context.transform.value.zoom
-    this._lastRenderMode = this.context.renderMode.value
+  disconnectedCallback() {
+    super.disconnectedCallback()
+    // Clean up subscriptions
+    this.unsubscribeCallbacks.forEach(unsubscribe => unsubscribe())
+    this.unsubscribeCallbacks = []
   }
 
   private _handleNewMap() {
