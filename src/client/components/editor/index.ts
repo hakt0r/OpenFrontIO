@@ -117,12 +117,13 @@ export class MapEditor extends TailwindElement {
   }
 
   async firstUpdated(): Promise<void> {
-    await this.connectInputToCanvas()
     await this.updateComplete
-    
-    // Wait for canvas to initialize engine
     await this.webglCanvas?.updateComplete
-    this.renderer = this.context.engine.value
+    
+    // Editor initializes the engine, not Canvas
+    await this.initializeEngine()
+    
+    await this.connectInputToCanvas()
     
     if (this.context.isTerrainVisible.value) this.terrainPanel?.show()
     else this.terrainPanel?.hide()
@@ -133,6 +134,22 @@ export class MapEditor extends TailwindElement {
     // Modal visibility is now handled by context subscription
     this.updateTheme()
     this.setupResizeObserver()
+  }
+
+  private async initializeEngine(): Promise<void> {
+    const canvas = this.webglCanvas?.canvas
+    if (!canvas) return
+    
+    const terrainColors = extractTerrainColorsFromTheme(this.theme)
+    const options = { preserveDrawingBuffer: true, terrainColors }
+    this.context.engine.value = new EditorEngine(canvas, options)
+    await this.context.engine.value.initialize()
+    this.renderer = this.context.engine.value
+    
+    if (this.context.mapState.value.gameMap) {
+      await this.webglCanvas?.updateTerrainData()
+    }
+    this.centerAndFit()
   }
 
   async updated(changedProperties: Map<string | number | symbol, unknown>) {
