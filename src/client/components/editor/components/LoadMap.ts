@@ -1,6 +1,6 @@
 import { Modal } from './Modal'
 import { customElement, property, state } from 'lit/decorators.js'
-import { getAllLocalMapNames, deleteLocalMap, loadMap, getServerMapMetadata, getServerMapImage } from '../engine/io'
+import { getAllLocalMapNames, deleteLocalMap, loadMap, getServerMapMetadata, getServerMapImage, loadMapFromLocalStorage } from '../engine/io'
 import { html, nothing, PropertyValues } from 'lit'
 import { TailwindElement } from './TailwindElement'
 import { MAP_NAME_MAPPING } from '../engine/constants'
@@ -75,8 +75,8 @@ export class LoadMapModalElement extends Modal {
       >
       <span slot="title">📂 Load Map</span>
       <div slot="actions" class="flex gap-3 justify-end">
-        <load-cancel-button .handleCancel=${this.hide}></load-cancel-button> 
-        <load-map-button .handleLoad=${this.handleLoad} .disabled=${!this.selectedMap}></load-map-button>
+        <e-button variant="secondary" .icon=${'❌'} @click=${this.hide} />
+        <e-button variant="primary" .icon=${'📂'} ?disabled=${!this.selectedMap} @click=${this.handleLoad} />
       </div>
       <div class="mb-6">
         <div class="text-lg font-semibold text-editor-text mb-3">🌍 Server Maps</div>
@@ -149,14 +149,32 @@ export class LoadMapItem extends TailwindElement {
       this.manifest = await getServerMapMetadata(this.mapName)
       this.image = await getServerMapImage(this.mapName)
     } else {
-      // For local maps, create a basic manifest
-      this.manifest = {
-        name: this.mapName,
-        description: 'Local map',
-        width: 0,
-        height: 0,
-        nations: []
-      } as any
+      // For local maps, load actual data from storage
+      try {
+        const localMapData = await loadMapFromLocalStorage(this.mapName)
+        if (localMapData) {
+          this.manifest = localMapData.manifest
+          this.image = localMapData.thumbnail || ''
+        } else {
+          // Fallback for missing data
+          this.manifest = {
+            name: this.mapName,
+            description: 'Local map',
+            width: 0,
+            height: 0,
+            nations: []
+          } as any
+        }
+      } catch (error) {
+        console.warn('Failed to load local map metadata:', error)
+        this.manifest = {
+          name: this.mapName,
+          description: 'Local map (corrupted)',
+          width: 0,
+          height: 0,
+          nations: []
+        } as any
+      }
     }
   }
 
@@ -198,39 +216,7 @@ export class LoadMapItem extends TailwindElement {
   }
 }
 
-@customElement('load-map-button')
-export class LoadMapButton extends TailwindElement {
-  @property({ type: Function }) handleLoad: () => void
-  @property({ type: Boolean }) disabled = false
-  render() {
-    return html`
-      <e-button 
-        variant="primary"
-        ?disabled=${this.disabled}
-        @click=${this.handleLoad}
-        class="bg-editor-primary text-white border-editor-primary hover:bg-editor-primary-hover"
-      >
-        Load Map
-      </e-button>
-    `
-  }
-}
-
-@customElement('load-cancel-button')
-export class LoadCancelButton extends TailwindElement {
-  @property({ type: Function }) handleCancel: () => void
-  render() {
-    return html`
-      <e-button 
-        variant="secondary" 
-        @click=${this.handleCancel}
-        class="bg-editor-secondary-background text-editor-text border-editor-border hover:bg-editor-border"
-      >
-        Cancel
-      </e-button>
-    `
-  }
-}
+// Removed custom button components - now using standardized e-button with variants
 
 @customElement('load-map-loading-indicator')
 export class LoadMapLoadingIndicator extends TailwindElement {

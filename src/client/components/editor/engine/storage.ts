@@ -11,6 +11,7 @@ interface MapSaveData {
   manifest: MapManifest
   terrain: number[]
   saveDate: string
+  thumbnail?: string // Base64 encoded thumbnail image
 }
 
 export class MapStorage {

@@ -102,11 +102,22 @@ export async function saveMapToLocalStorage(
 
   const terrainDataWithShores = generateShoresForExport(terrainData, width, height)
 
+  // Generate thumbnail if engine is available
+  let thumbnailBase64: string | undefined
+  if (engine) {
+    try {
+      thumbnailBase64 = await _renderMapThumbnail(mapState, engine, 256, 256)
+    } catch (error) {
+      console.warn('Failed to generate thumbnail:', error)
+    }
+  }
+
   await mapStorage.saveMap(mapName, {
     version: SAVE_DATA_VERSION,
     manifest,
     terrain: Array.from(terrainDataWithShores),
     saveDate: new Date().toISOString(),
+    thumbnail: thumbnailBase64,
   })
 }
 
@@ -287,7 +298,8 @@ async function _renderMapThumbnail(
   mapState: MapEditorState,
   engine: EditorEngine | null,
   targetWidth = 512,
-): Promise<Blob> {
+  targetHeight?: number,
+): Promise<string> {
   if (!engine) throw new Error('Editor engine not available for thumbnail generation')
 
   const canvas = engine.canvas
@@ -306,10 +318,10 @@ async function _renderMapThumbnail(
   await new Promise((resolve) => requestAnimationFrame(resolve))
 
   const aspectRatio = mapDimensions.height / mapDimensions.width
-  const targetHeight = Math.round(targetWidth * aspectRatio)
+  const finalTargetHeight = targetHeight || Math.round(targetWidth * aspectRatio)
   const thumbnailCanvas = document.createElement('canvas')
   thumbnailCanvas.width = targetWidth
-  thumbnailCanvas.height = targetHeight
+  thumbnailCanvas.height = finalTargetHeight
   const ctx = thumbnailCanvas.getContext('2d')
 
   if (!ctx) throw new Error('Failed to get context')
@@ -317,19 +329,12 @@ async function _renderMapThumbnail(
   ctx.imageSmoothingEnabled = true
   ctx.imageSmoothingQuality = 'high'
 
-  ctx.drawImage(canvas, 0, 0, canvasWidth, canvasHeight, 0, 0, targetWidth, targetHeight)
+  ctx.drawImage(canvas, 0, 0, canvasWidth, canvasHeight, 0, 0, targetWidth, finalTargetHeight)
 
-  return new Promise((resolve) =>
-    thumbnailCanvas.toBlob(
-      (blob) => {
-        engine.setTransform(currentTransform)
-        if (blob) resolve(blob)
-        else throw new Error('Failed to create WebP blob')
-      },
-      'image/webp',
-      0.9,
-    ),
-  )
+  // Return base64 data URL instead of blob
+  const dataUrl = thumbnailCanvas.toDataURL('image/webp', 0.8)
+  engine.setTransform(currentTransform)
+  return dataUrl
 }
 
 export async function exportAsJSON(mapState: MapEditorState, terrainData: Uint8Array, filename: string): Promise<void> {
