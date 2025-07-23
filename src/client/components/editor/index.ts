@@ -328,6 +328,10 @@ export class MapEditor extends TailwindElement {
     this.heightmapToolbar?.debouncedUpdateHeightmap?.()
   }
 
+  public updateTerrainColors(colors: any): void {
+    this.renderer?.updateTerrainColors(colors)
+  }
+
   public setTool(tool: EditorTool): void {
     this.context.currentTool.value = tool
     this.updateEngineFromContext()

@@ -25,11 +25,11 @@ export class ToolButton extends EButton {
   @property({ type: String }) type = 'tool'
   @property({ type: String }) value = 'brush'
   @property({ type: Function }) onclick = (event: MouseEvent) => {
-    // Use editor orchestration instead of duplicating logic
+    // Direct calls to editor - no optional chaining needed
     if (this.type === 'tool') {
-      this.editor.setTool?.(allTools[this.value])
+      this.editor.setTool(allTools[this.value])
     } else {
-      this.editor.setBrush?.(allBrushes[this.value])
+      this.editor.setBrush(allBrushes[this.value])
     }
     
     event.stopPropagation()

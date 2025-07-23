@@ -38,9 +38,10 @@ export class Canvas extends TailwindElement {
   }
 
   private updateTerrainColorsFromTheme(): void {
-    if (!this.engine || !this.editor) return
+    if (!this.editor) return
+    // Use editor method if it exists, fallback to direct engine call
     const terrainColors = extractTerrainColorsFromTheme(this.editor.theme)
-    this.engine.updateTerrainColors(terrainColors)
+    this.engine?.updateTerrainColors(terrainColors)
   }
 
   private async initializeEngine(): Promise<void> {
