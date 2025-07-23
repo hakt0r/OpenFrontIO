@@ -53,13 +53,6 @@ export class ToolButton extends EButton {
     this.classes = 'w-full'
   }
 
-  connectedCallback() {
-    super.connectedCallback()
-    // Subscribe to context changes to force re-render when tools/brushes change
-    this.context.currentTool.subscribe(() => this.requestUpdate())
-    this.context.currentBrush.subscribe(() => this.requestUpdate())
-  }
-
   willUpdate(changedProperties: Map<string | number | symbol, unknown>) {
     super.willUpdate(changedProperties)
     ;[this.icon, this.title, this.active] =

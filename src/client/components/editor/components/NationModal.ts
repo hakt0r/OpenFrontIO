@@ -22,7 +22,7 @@ export class NationModalElement extends Modal {
   }
 
   public hide = () => {
-    this.context.isNationsVisible.value = false
+    this.context.isNationVisible.value = false
     this.nation = ''
     this.flag = 'custom'
     this.strength = '50'

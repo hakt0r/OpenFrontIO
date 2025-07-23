@@ -159,11 +159,11 @@ export class TerrainPanel extends TailwindElement {
         </sidebar-brush-section>
         <bezel-panel>
           <section-header title="Controls"></section-header>
-          <range-control id="brushSize" name="brushSize" type="range" .value=${this.context.brushSize.value} min="1" max="20" step="1" helpText="Wheel" @change=${this.changeControl}></range-control>
-          <range-control id="brushMagnitude" name="brushMagnitude" type="range" .value=${this.context.brushMagnitude.value} min="1" max="31" step="1" helpText="Ctrl-Alt-Wheel" @change=${this.changeControl}></range-control>
-          <range-control id="maxSize" name="heightmapMaxSize" type="range" .value=${this.context.heightmapMaxSize.value} min="256" max="8192" step="256" helpText="Resolution" @change=${this.changeControl}></range-control>
-          <range-control id="clampMin" name="heightmapClampMin" type="range" .value=${this.context.heightmapClampMin.value} min="0" max="1" step="0.01" @change=${this.changeControl}></range-control>
-          <range-control id="clampMax" name="heightmapClampMax" type="range" .value=${this.context.heightmapClampMax.value} min="0" max="1" step="0.01" @change=${this.changeControl}></range-control>
+          <range-control id="brushSize" name="brushSize" type="range" min="1" max="20" step="1" helpText="Wheel" @change=${this.changeControl}></range-control>
+          <range-control id="brushMagnitude" name="brushMagnitude" type="range" min="1" max="31" step="1" helpText="Ctrl-Alt-Wheel" @change=${this.changeControl}></range-control>
+          <range-control id="maxSize" name="heightmapMaxSize" type="range" min="256" max="8192" step="256" helpText="Resolution" @change=${this.changeControl}></range-control>
+          <range-control id="clampMin" name="heightmapClampMin" type="range" min="0" max="1" step="0.01" @change=${this.changeControl}></range-control>
+          <range-control id="clampMax" name="heightmapClampMax" type="range" min="0" max="1" step="0.01" @change=${this.changeControl}></range-control>
         </bezel-panel>
      </div>
     `

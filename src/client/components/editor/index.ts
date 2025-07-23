@@ -136,8 +136,7 @@ export class MapEditor extends TailwindElement {
     else this.nationsPanel?.hide()
     if (this.context.isHeightmapVisible.value) this.heightmapToolbar?.show()
     else this.heightmapToolbar?.hide()
-    if (this.context.isSaveMapVisible.value) this.saveMapModal?.show()
-    else this.saveMapModal?.hide()
+    // Modal visibility is now handled by context subscription
     this.updateTheme()
     this.setupResizeObserver()
   }
@@ -284,7 +283,7 @@ export class MapEditor extends TailwindElement {
         this.context.editingNation.value = hitNation as Nation
         this.context.isEditingNation.value = true
         this.context.pendingNationCoords.value = null
-        this.nationModal?.show()
+        this.context.isNationVisible.value = true
         e.preventDefault()
       }
     }
@@ -333,7 +332,7 @@ export class MapEditor extends TailwindElement {
         this.context.editingNation.value = hitNation as Nation
         this.context.isEditingNation.value = true
         this.context.pendingNationCoords.value = null
-        this.nationModal?.show()
+        this.context.isNationVisible.value = true
         e.preventDefault()
       }
     }
@@ -379,7 +378,7 @@ export class MapEditor extends TailwindElement {
       this.context.pendingNationCoords.value = [x, y]
       this.context.isEditingNation.value = false
       this.context.editingNation.value = null
-      this.nationModal?.show()
+      this.context.isNationVisible.value = true
       return
     }
     if (!this.renderer) return
@@ -443,10 +442,10 @@ export class MapEditor extends TailwindElement {
           <heightmap-toolbar></heightmap-toolbar>
         </div>
       </div>
-      <new-map-modal></new-map-modal>
-      <load-map-modal></load-map-modal>
-      <save-map-modal></save-map-modal>
-      <nation-modal></nation-modal>
+              <new-map-modal name="NewMap"></new-map-modal>
+        <load-map-modal name="LoadMap"></load-map-modal>
+        <save-map-modal name="SaveMap"></save-map-modal>
+        <nation-modal name="Nation"></nation-modal>
     `
   }
 

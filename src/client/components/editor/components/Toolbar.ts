@@ -26,11 +26,11 @@ export class MapEditorToolbar extends TailwindElement {
   }
 
   private _handleNewMap() {
-    this.editor.newMapModal?.show()
+    this.context.isNewMapVisible.value = true
   }
 
   private _handleLoadMap() {
-    this.editor.loadMapModal?.show()
+    this.context.isLoadMapVisible.value = true
   }
 
   private _handleLoadHeightmap = (event: Event) => {
@@ -85,7 +85,7 @@ export class MapEditorToolbar extends TailwindElement {
   }
 
   private _handleSaveMap() {
-    this.editor.saveMapModal?.show()
+    this.context.isSaveMapVisible.value = true
   }
 
   private _handleClose() {
