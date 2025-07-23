@@ -16,6 +16,7 @@ export const styles = {
 
 @customElement('e-button')
 export class EButton extends TailwindElement {
+  protected props = [] // Button component doesn't need context subscription
   @property({ type: Boolean }) active = false
   @property({ type: Boolean }) disabled = false
   @property({ type: Function }) onClick: (event: MouseEvent) => void = () => {}

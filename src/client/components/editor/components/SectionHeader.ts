@@ -4,8 +4,8 @@ import { TailwindElement } from './TailwindElement'
 
 @customElement('section-header')
 export class SectionHeader extends TailwindElement {
-  @property({ type: String })
-  title = ''
+  protected props = [] // SectionHeader doesn't need context subscription
+  @property({ type: String }) title = ''
 
   render() {
     return html`<h4 class="text-md font-semibold text-[--editor-text]">${this.title}</h4>`

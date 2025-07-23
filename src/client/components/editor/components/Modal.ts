@@ -17,6 +17,7 @@ export const styles = {
 }
 
 export abstract class Modal extends TailwindElement {
+  protected props = [] // Subclasses should override with specific modal visibility props
   @property({ type: String }) name: string
   @property({ type: String }) styles = styles
   @state() open = false
@@ -61,6 +62,7 @@ export abstract class Modal extends TailwindElement {
 
 @customElement('modal-base')
 export abstract class ModalBase extends TailwindElement {
+  protected props = [] // Subclasses should override with specific modal visibility props
   @property({ type: String }) name: string
   @property({ type: String }) styles = styles
   @property({ type: Boolean }) open = false

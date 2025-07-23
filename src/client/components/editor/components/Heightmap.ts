@@ -27,6 +27,7 @@ export const styles = {
 
 @customElement('heightmap-toolbar')
 export class HeightmapToolbarElement extends TailwindElement {
+  protected props = ['isHeightmapVisible', 'terrainThresholds', 'heightmapMaxSize', 'heightmapClampMin', 'heightmapClampMax']
   private isDraggingTerrain = false
   private draggedThreshold: string | null = null
   private _lastTerrainThresholds: TerrainThresholds | null = null

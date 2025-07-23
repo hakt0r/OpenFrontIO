@@ -8,6 +8,7 @@ import { MapManifest } from '../../../../core/game/TerrainMapLoader'
 
 @customElement('load-map-modal')
 export class LoadMapModalElement extends Modal {
+  protected props = ['isLoadMapVisible']
   @state() private selectedMap: string | null = null
   @state() private serverMaps = Object.keys(MAP_NAME_MAPPING) as unknown as (keyof typeof MAP_NAME_MAPPING)[]
   @state() private localMaps: string[] = []

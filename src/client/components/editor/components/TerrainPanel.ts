@@ -10,6 +10,7 @@ import { EditorTool, getEngineBrushValues, type SidebarConfig } from '../types'
 
 @customElement('terrain-panel')
 export class TerrainPanel extends TailwindElement {
+  protected props = ['isTerrainVisible', 'currentTool', 'currentBrush', 'brushSize', 'brushMagnitude', 'heightmapMaxSize', 'heightmapClampMin', 'heightmapClampMax']
 
   connectedCallback() {
     super.connectedCallback()

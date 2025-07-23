@@ -7,6 +7,7 @@ import { Modal } from './Modal'
 
 @customElement('new-map-modal')
 export class NewMapModalElement extends Modal {
+  protected props = ['isNewMapVisible']
   @state() private width = '800'
   @state() private height = '600'
   @state() private mapName = 'New Map'

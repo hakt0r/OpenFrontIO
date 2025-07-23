@@ -10,6 +10,7 @@ const SCREENSHOT_SUCCESS_TIMEOUT = 2000
 
 @customElement('map-editor-toolbar')
 export class MapEditorToolbar extends TailwindElement {
+  protected props = ['transform', 'renderMode', 'isDarkMode', 'isTerrainVisible', 'isNationsVisible', 'isHeightmapVisible', 'mapState']
   private _lastZoom = 0
   private _lastRenderMode = 0
 

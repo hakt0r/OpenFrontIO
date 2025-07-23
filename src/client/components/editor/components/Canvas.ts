@@ -9,6 +9,7 @@ import { TailwindElement } from './TailwindElement'
 
 @customElement('webgl-canvas')
 export class Canvas extends TailwindElement {
+  protected props = ['mapState', 'transform', 'hoverCoords', 'hoverTerrainInfo', 'isDarkMode']
   @query('#map-canvas') public canvas!: HTMLCanvasElement
 
   private renderLoop: number | null = null

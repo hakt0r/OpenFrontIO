@@ -4,6 +4,7 @@ import { TailwindElement } from './TailwindElement'
 
 @customElement('range-control')
 export class SidebarRangeControl extends TailwindElement {
+  protected props = ['brushSize', 'brushMagnitude', 'heightmapClampMin', 'heightmapClampMax', 'heightmapMaxSize']
   @property({ type: String }) name!: string
   @property({ type: String }) helpText!: string
   @property({ type: Number }) min!: number

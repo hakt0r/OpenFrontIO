@@ -10,6 +10,7 @@ export const styles = {
 
 @customElement('bezel-panel')
 export class Bezel extends TailwindElement {
+  protected props = [] // Bezel doesn't need context subscription
   @property({ type: String }) class = ''
   @property({ type: String }) styles = styles
 

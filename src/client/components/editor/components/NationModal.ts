@@ -7,6 +7,7 @@ import { Modal } from './Modal'
 
 @customElement('nation-modal')
 export class NationModalElement extends Modal {
+  protected props = ['isNationVisible', 'isEditingNation', 'editingNation', 'pendingNationCoords']
   @state() private nation = ''
   @state() private flag = 'custom'
   @state() private strength = '50'

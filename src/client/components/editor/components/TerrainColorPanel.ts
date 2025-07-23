@@ -6,6 +6,7 @@ import type { TerrainColors } from '../engine/types'
 
 @customElement('terrain-color-panel')
 export class TerrainColorPanel extends TailwindElement {
+  protected props = ['isDarkMode'] // Only needs to track theme changes
   @state() isOpen = false
   @state() customColors: TerrainColors = {
     oceanColor1: { r: 0.1, g: 0.3, b: 0.6 },

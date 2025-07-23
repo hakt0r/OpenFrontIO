@@ -7,6 +7,7 @@ import { TailwindElement } from './TailwindElement'
 
 @customElement('nations-panel')
 export class NationsPanel extends TailwindElement {
+  protected props = ['mapState', 'isNationsVisible']
   @state() isOpen = true
 
   // Get nations from context instead of separate property
