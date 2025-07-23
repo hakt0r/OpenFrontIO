@@ -13,7 +13,7 @@ import './components/Toolbar'
 import './components/Toolkit'
 
 import { customElement, query, state } from 'lit/decorators.js'
-import { EditorTool as EditorTool, BrushType as BrushTypeEnum, defaultTerrainThresholds, BrushCursor } from './types'
+import { EditorTool as EditorTool, BrushType as BrushTypeEnum, defaultTerrainThresholds, BrushCursor, type BrushType, getEngineBrushValues } from './types'
 import { initializeMap, paintAtPosition } from './engine/actions'
 import { html } from 'lit'
 import { handleMouseDown, handleLeftClick, handleDrag, handleDrawing, handleZoom } from './engine/input'
@@ -291,27 +291,64 @@ export class MapEditor extends TailwindElement {
       this.zoom(e)
       e.preventDefault()
     } else if (e.shiftKey) {
-      // Brush size adjustment with Shift + wheel
-      const delta = e.deltaY > 0 ? -1 : 1
-      const newSize = Math.max(1, Math.min(50, this.context.brushSize.value + delta))
-      this.context.brushSize.value = newSize
+      this.adjustBrushSize(e.deltaY > 0 ? -1 : 1)
       e.preventDefault()
     } else {
-      // Tool/brush switching with plain wheel
-      const delta = e.deltaY > 0 ? 1 : -1
-      if (this.context.currentTool.value === 'paint') {
-        const brushes = ['ocean', 'plains', 'highland', 'mountain', 'gaussianblur', 'raiseterrain', 'lowerterrain']
-        const currentIndex = brushes.indexOf(this.context.currentBrush.value)
-        const newIndex = (currentIndex + delta + brushes.length) % brushes.length
-        this.context.currentBrush.value = brushes[newIndex] as any
-      } else {
-        const tools = ['paint', 'erase', 'nation']
-        const currentIndex = tools.indexOf(this.context.currentTool.value)
-        const newIndex = (currentIndex + delta + tools.length) % tools.length
-        this.context.currentTool.value = tools[newIndex] as any
-      }
+      this.cycleTool(e.deltaY > 0 ? 1 : -1)
       e.preventDefault()
     }
+  }
+
+  // Orchestration methods that coordinate UI + Engine
+  private adjustBrushSize(delta: number): void {
+    const newSize = Math.max(1, Math.min(50, this.context.brushSize.value + delta))
+    this.setBrushSize(newSize)
+  }
+
+  public setBrushSize(size: number): void {
+    this.context.brushSize.value = size
+    this.renderer?.setBrushRadius(size)
+  }
+
+  public setBrushMagnitude(magnitude: number): void {
+    this.context.brushMagnitude.value = magnitude
+    this.renderer?.setBrushMagnitude(magnitude)
+  }
+
+  private cycleTool(delta: number): void {
+    if (this.context.currentTool.value === 'paint') {
+      this.cycleBrush(delta)
+    } else {
+      const tools = ['paint', 'erase', 'nation']
+      const currentIndex = tools.indexOf(this.context.currentTool.value)
+      const newIndex = (currentIndex + delta + tools.length) % tools.length
+      this.setTool(tools[newIndex] as any)
+    }
+  }
+
+  private cycleBrush(delta: number): void {
+    const brushes = ['ocean', 'plains', 'highland', 'mountain', 'gaussianblur', 'raiseterrain', 'lowerterrain']
+    const currentIndex = brushes.indexOf(this.context.currentBrush.value)
+    const newIndex = (currentIndex + delta + brushes.length) % brushes.length
+    this.setBrush(brushes[newIndex] as any)
+  }
+
+  public setTool(tool: EditorTool): void {
+    this.context.currentTool.value = tool
+    this.updateEngineFromContext()
+  }
+
+  public setBrush(brush: BrushType): void {
+    this.context.currentBrush.value = brush
+    this.context.currentTool.value = 'paint' // Auto-switch to paint tool
+    this.updateEngineFromContext()
+  }
+
+  private updateEngineFromContext(): void {
+    if (!this.renderer) return
+    const [engineBrushType, brushMagnitude] = getEngineBrushValues(this.context)
+    this.renderer.setBrushType(engineBrushType)
+    this.renderer.setBrushMagnitude(brushMagnitude)
   }
 
   private onContextMenu = (e: MouseEvent): void => {

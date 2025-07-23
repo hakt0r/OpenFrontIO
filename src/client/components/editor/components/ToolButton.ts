@@ -25,17 +25,12 @@ export class ToolButton extends EButton {
   @property({ type: String }) type = 'tool'
   @property({ type: String }) value = 'brush'
   @property({ type: Function }) onclick = (event: MouseEvent) => {
-    // Direct signal updates - no event emission needed
-    const newTool = this.type === 'tool' ? allTools[this.value] : 'paint'
-    const newBrush = this.type === 'brush' ? allBrushes[this.value] : this.context.currentBrush.value
-    
-    this.context.currentTool.value = newTool
-    this.context.currentBrush.value = newBrush
-    
-    // Update engine directly through context
-    const [engineBrushType, brushMagnitude] = getEngineBrushValues(this.context)
-    this.context.engine.value?.renderer.setBrushType(engineBrushType)
-    this.context.engine.value?.renderer.setBrushMagnitude(brushMagnitude)
+    // Use editor orchestration instead of duplicating logic
+    if (this.type === 'tool') {
+      this.editor.setTool?.(allTools[this.value])
+    } else {
+      this.editor.setBrush?.(allBrushes[this.value])
+    }
     
     event.stopPropagation()
     event.preventDefault()

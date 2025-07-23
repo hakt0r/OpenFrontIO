@@ -16,8 +16,7 @@ export class SidebarRangeControl extends TailwindElement {
   }
 
   private updateBrushSize = (value: number) => {
-    this.context.brushSize.value = value
-    this.context.engine.value?.setBrushRadius(value)
+    this.editor.setBrushSize?.(value) ?? (this.context.brushSize.value = value, this.context.engine.value?.setBrushRadius(value))
   }
 
   private updateBrushMagnitude = (value: number) => {

@@ -45,36 +45,31 @@ export class TerrainPanel extends TailwindElement {
       e.preventDefault()
       e.stopPropagation()
       const delta = e.deltaY > 0 ? -1 : 1
-      context.brushMagnitude.value = Math.max(1, Math.min(31, context.brushMagnitude.value + delta))
-      engine.setBrushMagnitude(context.brushMagnitude.value)
+      this.editor.setBrushMagnitude?.(Math.max(1, Math.min(31, context.brushMagnitude.value + delta)))
       return
     }
 
     if (e.shiftKey) {
       e.preventDefault()
       e.stopPropagation()
-      context.currentTool.value = switchTool(context.currentTool.value, e.deltaY > 0 ? 1 : -1)
-      const [engineBrushType, brushMagnitude] = getEngineBrushValues(context)
-      engine.setBrushType(engineBrushType)
-      engine.setBrushMagnitude(brushMagnitude)
+      const newTool = switchTool(context.currentTool.value, e.deltaY > 0 ? 1 : -1)
+      this.editor.setTool(newTool)
       return
     }
 
     if (e.altKey && !e.ctrlKey && !e.metaKey) {
       e.preventDefault()
       e.stopPropagation()
-      context.currentBrush.value = switchBrushType(context.currentBrush.value, e.deltaY > 0 ? 1 : -1)
-      const [engineBrushType, brushMagnitude] = getEngineBrushValues(context)
-      engine.setBrushType(engineBrushType)
-      engine.setBrushMagnitude(brushMagnitude)
+      const newBrush = switchBrushType(context.currentBrush.value, e.deltaY > 0 ? 1 : -1)
+      this.editor.setBrush(newBrush)
       return
     }
 
     if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
       e.preventDefault()
       e.stopPropagation()
-      context.brushSize.value = changeBrushSize(context.brushSize.value, e.deltaY > 0 ? -1 : 1)
-      engine?.setBrushRadius(context.brushSize.value)
+      const newSize = changeBrushSize(context.brushSize.value, e.deltaY > 0 ? -1 : 1)
+      this.editor.setBrushSize(newSize)
       return
     }
   }
