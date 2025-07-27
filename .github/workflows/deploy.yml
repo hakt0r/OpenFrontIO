@@ -13,6 +13,7 @@ on:
         options:
           - openfront.io
           - openfront.dev
+          - map-of.dev
       target_host:
         description: "Deployment Host"
         required: true
